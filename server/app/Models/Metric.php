@@ -128,17 +128,18 @@ class Metric extends Model
      */
     public static function fromAgentPayload(Server $server, array $payload): self
     {
+        $system = $payload['system'] ?? [];
         $memory = $payload['memory'] ?? [];
-        $load = $payload['load'] ?? [];
+        $load = $system['load'] ?? [];
 
         return static::create([
             'server_id' => $server->id,
             'recorded_at' => now(),
-            'uptime' => $payload['uptime'] ?? null,
+            'uptime' => $system['uptime'] ?? null,
             'load_1m' => $load['1m'] ?? null,
             'load_5m' => $load['5m'] ?? null,
             'load_15m' => $load['15m'] ?? null,
-            'cpu_cores' => $payload['cpu_cores'] ?? null,
+            'cpu_cores' => $system['cpu_cores'] ?? null,
             'memory_total' => $memory['mem']['total'] ?? null,
             'memory_used' => $memory['mem']['used'] ?? null,
             'memory_available' => $memory['mem']['available'] ?? null,
