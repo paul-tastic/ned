@@ -45,6 +45,27 @@ json_escape() {
 # System Metrics
 # -----------------------------------------------------------------------------
 
+get_ip_addresses() {
+    # Get primary IP addresses (IPv4 and optionally IPv6)
+    local ipv4=""
+    local ipv6=""
+
+    # Try to get public IP via external service (timeout 2s)
+    ipv4=$(curl -s --connect-timeout 2 -4 ifconfig.me 2>/dev/null || \
+           curl -s --connect-timeout 2 -4 icanhazip.com 2>/dev/null || \
+           hostname -I 2>/dev/null | awk '{print $1}' || \
+           echo "")
+
+    # Get local IPs as fallback/additional info
+    local local_ip=$(hostname -I 2>/dev/null | awk '{print $1}' || echo "")
+
+    if [ -n "$ipv4" ]; then
+        printf '{"public": "%s", "local": "%s"}' "$ipv4" "$local_ip"
+    else
+        printf '{"public": null, "local": "%s"}' "$local_ip"
+    fi
+}
+
 get_uptime() {
     if [ -f /proc/uptime ]; then
         awk '{print int($1)}' /proc/uptime
@@ -319,6 +340,7 @@ build_payload() {
     "timestamp": "$timestamp",
     "agent_version": "$NED_AGENT_VERSION",
     "hostname": "$NED_HOSTNAME",
+    "ip": $(get_ip_addresses),
     "distro": $(get_distro_info),
     "system": {
         "uptime": $(get_uptime),

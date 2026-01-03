@@ -151,22 +151,26 @@
             <div class="bg-zinc-800 rounded-lg p-6 mb-8">
                 <h3 class="font-semibold mb-4">Security</h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    @if(isset($latestMetric->security['fail2ban']))
-                        <div class="bg-zinc-900 rounded-lg p-4">
-                            <div class="text-zinc-400 text-sm mb-1">Fail2ban Jails</div>
-                            <div class="text-xl font-bold">{{ $latestMetric->security['fail2ban']['jails'] ?? 0 }}</div>
-                        </div>
-                        <div class="bg-zinc-900 rounded-lg p-4">
-                            <div class="text-zinc-400 text-sm mb-1">Banned IPs</div>
-                            <div class="text-xl font-bold">{{ $latestMetric->security['fail2ban']['banned'] ?? 0 }}</div>
-                        </div>
-                    @endif
                     @if(isset($latestMetric->security['ssh_failed_24h']))
                         <div class="bg-zinc-900 rounded-lg p-4">
                             <div class="text-zinc-400 text-sm mb-1">SSH Failed (24h)</div>
-                            <div class="text-xl font-bold @if($latestMetric->security['ssh_failed_24h'] > 100) text-amber-400 @endif">
+                            <div class="text-xl font-bold @if($latestMetric->security['ssh_failed_24h'] > 100) text-amber-400 @endif @if($latestMetric->security['ssh_failed_24h'] > 500) text-red-400 @endif">
                                 {{ number_format($latestMetric->security['ssh_failed_24h']) }}
                             </div>
+                        </div>
+                    @endif
+                    @if(isset($latestMetric->security['f2b_currently_banned']))
+                        <div class="bg-zinc-900 rounded-lg p-4">
+                            <div class="text-zinc-400 text-sm mb-1">Currently Banned</div>
+                            <div class="text-xl font-bold @if($latestMetric->security['f2b_currently_banned'] > 0) text-emerald-400 @endif">
+                                {{ number_format($latestMetric->security['f2b_currently_banned']) }}
+                            </div>
+                        </div>
+                    @endif
+                    @if(isset($latestMetric->security['f2b_total_banned']))
+                        <div class="bg-zinc-900 rounded-lg p-4">
+                            <div class="text-zinc-400 text-sm mb-1">Total Banned</div>
+                            <div class="text-xl font-bold">{{ number_format($latestMetric->security['f2b_total_banned']) }}</div>
                         </div>
                     @endif
                     @if(isset($latestMetric->security['last_attack']) && $latestMetric->security['last_attack'])
@@ -178,6 +182,40 @@
                 </div>
             </div>
         @endif
+
+        <!-- Raw Data Accordion -->
+        <div x-data="{ open: false }" class="bg-zinc-800 rounded-lg mb-8">
+            <button @click="open = !open" class="w-full p-4 flex items-center justify-between text-left">
+                <span class="font-semibold text-zinc-300">Raw Metric Data</span>
+                <svg :class="{ 'rotate-180': open }" class="w-5 h-5 text-zinc-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+            <div x-show="open" x-collapse class="px-4 pb-4">
+                <pre class="bg-zinc-900 rounded-lg p-4 text-xs font-mono text-zinc-300 overflow-x-auto max-h-96 overflow-y-auto">{{ json_encode([
+                    'recorded_at' => $latestMetric->recorded_at->toIso8601String(),
+                    'uptime' => $latestMetric->uptime,
+                    'load' => [
+                        '1m' => $latestMetric->load_1m,
+                        '5m' => $latestMetric->load_5m,
+                        '15m' => $latestMetric->load_15m,
+                    ],
+                    'cpu_cores' => $latestMetric->cpu_cores,
+                    'memory' => [
+                        'total_mb' => $latestMetric->memory_total,
+                        'used_mb' => $latestMetric->memory_used,
+                        'available_mb' => $latestMetric->memory_available,
+                    ],
+                    'swap' => [
+                        'total_mb' => $latestMetric->swap_total,
+                        'used_mb' => $latestMetric->swap_used,
+                    ],
+                    'disks' => $latestMetric->disks,
+                    'services' => $latestMetric->services,
+                    'security' => $latestMetric->security,
+                ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
+            </div>
+        </div>
     @else
         <div class="bg-zinc-800 rounded-lg p-12 text-center">
             <div class="text-4xl mb-4">⏳</div>
@@ -189,10 +227,10 @@
         </div>
     @endif
 
-    <!-- Last Seen -->
+    <!-- Last Update -->
     <div class="text-center text-zinc-500 text-sm">
         @if($server->last_seen_at)
-            Last seen {{ $server->last_seen_at->diffForHumans() }}
+            Last update {{ $server->last_seen_at->diffForHumans() }}
         @else
             Never connected
         @endif
