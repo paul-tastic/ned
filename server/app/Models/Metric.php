@@ -24,6 +24,7 @@ class Metric extends Model
         'swap_total',
         'swap_used',
         'disks',
+        'network',
         'services',
         'security',
     ];
@@ -34,6 +35,7 @@ class Metric extends Model
         'load_5m' => 'decimal:2',
         'load_15m' => 'decimal:2',
         'disks' => 'array',
+        'network' => 'array',
         'services' => 'array',
         'security' => 'array',
     ];
@@ -146,6 +148,7 @@ class Metric extends Model
             'swap_total' => $memory['swap']['total'] ?? null,
             'swap_used' => $memory['swap']['used'] ?? null,
             'disks' => $payload['disks'] ?? null,
+            'network' => $payload['network'] ?? null,
             'services' => $payload['services'] ?? null,
             'security' => $payload['security'] ?? null,
         ]);

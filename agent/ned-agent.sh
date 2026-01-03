@@ -12,7 +12,7 @@
 set -e
 
 # Agent version
-NED_AGENT_VERSION="0.1.0"
+NED_AGENT_VERSION="0.2.0"
 
 # Load config
 CONFIG_FILE="${NED_CONFIG:-/etc/ned/config}"
@@ -285,6 +285,47 @@ get_services() {
 }
 
 # -----------------------------------------------------------------------------
+# Network I/O
+# -----------------------------------------------------------------------------
+
+get_network() {
+    # Read network interface stats from /proc/net/dev
+    # Returns array of interfaces with rx/tx bytes
+    echo "["
+    local first=true
+
+    while IFS= read -r line; do
+        # Skip header lines
+        [[ "$line" =~ ^Inter ]] && continue
+        [[ "$line" =~ face ]] && continue
+
+        # Parse interface name and stats
+        local iface=$(echo "$line" | awk -F: '{print $1}' | tr -d ' ')
+        local stats=$(echo "$line" | awk -F: '{print $2}')
+
+        # Skip loopback
+        [ "$iface" = "lo" ] && continue
+
+        # Extract rx_bytes (field 1) and tx_bytes (field 9)
+        local rx_bytes=$(echo "$stats" | awk '{print $1}')
+        local tx_bytes=$(echo "$stats" | awk '{print $9}')
+
+        # Skip interfaces with no traffic
+        [ "$rx_bytes" = "0" ] && [ "$tx_bytes" = "0" ] && continue
+
+        if [ "$first" = true ]; then
+            first=false
+        else
+            echo -n ","
+        fi
+
+        printf '{"interface": "%s", "rx_bytes": %s, "tx_bytes": %s}' "$iface" "$rx_bytes" "$tx_bytes"
+    done < /proc/net/dev
+
+    echo "]"
+}
+
+# -----------------------------------------------------------------------------
 # Security Metrics
 # -----------------------------------------------------------------------------
 
@@ -349,6 +390,7 @@ build_payload() {
     },
     "memory": $(get_memory),
     "disks": $(get_disks),
+    "network": $(get_network),
     "services": $(get_services),
     "security": $(get_security)
 }

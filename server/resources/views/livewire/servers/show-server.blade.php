@@ -146,6 +146,63 @@
             </div>
         @endif
 
+        <!-- Network I/O -->
+        @if($latestMetric->network && count($latestMetric->network) > 0)
+            <div class="bg-zinc-800 rounded-lg p-6 mb-8">
+                <h3 class="font-semibold mb-4">Network I/O</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    @foreach($latestMetric->network as $iface)
+                        <div class="bg-zinc-900 rounded-lg p-4">
+                            <div class="text-zinc-400 text-sm mb-2 font-mono">{{ $iface['interface'] }}</div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <div class="text-zinc-500 text-xs mb-1">↓ Received</div>
+                                    <div class="text-lg font-bold text-emerald-400">
+                                        @php
+                                            $rx = $iface['rx_bytes'];
+                                            if ($rx >= 1099511627776) {
+                                                $rxFormatted = number_format($rx / 1099511627776, 2) . ' TB';
+                                            } elseif ($rx >= 1073741824) {
+                                                $rxFormatted = number_format($rx / 1073741824, 2) . ' GB';
+                                            } elseif ($rx >= 1048576) {
+                                                $rxFormatted = number_format($rx / 1048576, 1) . ' MB';
+                                            } elseif ($rx >= 1024) {
+                                                $rxFormatted = number_format($rx / 1024, 0) . ' KB';
+                                            } else {
+                                                $rxFormatted = $rx . ' B';
+                                            }
+                                        @endphp
+                                        {{ $rxFormatted }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-zinc-500 text-xs mb-1">↑ Sent</div>
+                                    <div class="text-lg font-bold text-blue-400">
+                                        @php
+                                            $tx = $iface['tx_bytes'];
+                                            if ($tx >= 1099511627776) {
+                                                $txFormatted = number_format($tx / 1099511627776, 2) . ' TB';
+                                            } elseif ($tx >= 1073741824) {
+                                                $txFormatted = number_format($tx / 1073741824, 2) . ' GB';
+                                            } elseif ($tx >= 1048576) {
+                                                $txFormatted = number_format($tx / 1048576, 1) . ' MB';
+                                            } elseif ($tx >= 1024) {
+                                                $txFormatted = number_format($tx / 1024, 0) . ' KB';
+                                            } else {
+                                                $txFormatted = $tx . ' B';
+                                            }
+                                        @endphp
+                                        {{ $txFormatted }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                <div class="text-zinc-500 text-xs mt-3">Cumulative since boot</div>
+            </div>
+        @endif
+
         <!-- Security -->
         @if($latestMetric->security)
             <div class="bg-zinc-800 rounded-lg p-6 mb-8">
@@ -229,6 +286,7 @@
                         'used_mb' => $latestMetric->swap_used,
                     ],
                     'disks' => $latestMetric->disks,
+                    'network' => $latestMetric->network,
                     'services' => $latestMetric->services,
                     'security' => $latestMetric->security,
                 ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
