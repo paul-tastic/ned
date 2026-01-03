@@ -137,9 +137,17 @@
                 <h3 class="font-semibold mb-4">Services</h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     @foreach($latestMetric->services as $service)
-                        <div class="flex items-center gap-2 bg-zinc-900 rounded-lg px-3 py-2">
+                        @php
+                            $description = \App\Support\ServiceInfo::get($service['name']);
+                        @endphp
+                        <div class="flex items-center gap-2 bg-zinc-900 rounded-lg px-3 py-2 group relative">
                             <div class="w-2 h-2 rounded-full {{ $service['status'] === 'running' ? 'bg-emerald-400' : 'bg-red-400' }}"></div>
                             <span class="text-sm font-mono">{{ $service['name'] }}</span>
+                            @if($description)
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-zinc-700 text-xs text-zinc-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                                    {{ $description }}
+                                </div>
+                            @endif
                         </div>
                     @endforeach
                 </div>
