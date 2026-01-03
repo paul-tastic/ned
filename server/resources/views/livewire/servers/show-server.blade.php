@@ -150,33 +150,51 @@
         @if($latestMetric->security)
             <div class="bg-zinc-800 rounded-lg p-6 mb-8">
                 <h3 class="font-semibold mb-4">Security</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                     @if(isset($latestMetric->security['ssh_failed_24h']))
-                        <div class="bg-zinc-900 rounded-lg p-4">
-                            <div class="text-zinc-400 text-sm mb-1">SSH Failed (24h)</div>
-                            <div class="text-xl font-bold @if($latestMetric->security['ssh_failed_24h'] > 100) text-amber-400 @endif @if($latestMetric->security['ssh_failed_24h'] > 500) text-red-400 @endif">
+                        <div class="bg-zinc-900 rounded-lg p-4 group relative">
+                            <div class="text-zinc-400 text-sm mb-1 flex items-center gap-1">
+                                SSH Failed (24h)
+                                <svg class="w-3.5 h-3.5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="text-xl font-bold @if($latestMetric->security['ssh_failed_24h'] > 500) text-red-400 @elseif($latestMetric->security['ssh_failed_24h'] > 100) text-amber-400 @endif">
                                 {{ number_format($latestMetric->security['ssh_failed_24h']) }}
+                            </div>
+                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-zinc-700 text-xs text-zinc-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                                Failed SSH login attempts in the last 24 hours.<br>High numbers indicate brute-force attacks.
                             </div>
                         </div>
                     @endif
                     @if(isset($latestMetric->security['f2b_currently_banned']))
-                        <div class="bg-zinc-900 rounded-lg p-4">
-                            <div class="text-zinc-400 text-sm mb-1">Currently Banned</div>
+                        <div class="bg-zinc-900 rounded-lg p-4 group relative">
+                            <div class="text-zinc-400 text-sm mb-1 flex items-center gap-1">
+                                Currently Banned
+                                <svg class="w-3.5 h-3.5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
                             <div class="text-xl font-bold @if($latestMetric->security['f2b_currently_banned'] > 0) text-emerald-400 @endif">
                                 {{ number_format($latestMetric->security['f2b_currently_banned']) }}
+                            </div>
+                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-zinc-700 text-xs text-zinc-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                                IPs currently blocked by fail2ban.<br>Green = fail2ban is actively protecting.
                             </div>
                         </div>
                     @endif
                     @if(isset($latestMetric->security['f2b_total_banned']))
-                        <div class="bg-zinc-900 rounded-lg p-4">
-                            <div class="text-zinc-400 text-sm mb-1">Total Banned</div>
+                        <div class="bg-zinc-900 rounded-lg p-4 group relative">
+                            <div class="text-zinc-400 text-sm mb-1 flex items-center gap-1">
+                                Total Banned
+                                <svg class="w-3.5 h-3.5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
                             <div class="text-xl font-bold">{{ number_format($latestMetric->security['f2b_total_banned']) }}</div>
-                        </div>
-                    @endif
-                    @if(isset($latestMetric->security['last_attack']) && $latestMetric->security['last_attack'])
-                        <div class="bg-zinc-900 rounded-lg p-4">
-                            <div class="text-zinc-400 text-sm mb-1">Last Attack</div>
-                            <div class="text-sm font-mono text-zinc-300">{{ $latestMetric->security['last_attack'] }}</div>
+                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-zinc-700 text-xs text-zinc-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                                Total IPs banned by fail2ban since last restart.
+                            </div>
                         </div>
                     @endif
                 </div>
