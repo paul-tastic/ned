@@ -24,9 +24,15 @@ Meet Ned - the basement-dwelling, bespectacled server watcher who keeps an eye o
 - Uptime
 
 ### Services
-- Auto-detect common services (nginx, apache, mysql, postgres, redis, php-fpm)
-- Custom service checks (any systemd unit)
+- **Auto-detect running services** - No configuration needed, agent discovers what's running
+- Supports systemd, OpenRC (Alpine), and SysVinit
+- Baseline services (sshd, cron) always monitored if present
 - Process monitoring (is X running?)
+
+### Linux Distribution Support
+- Automatic distro detection (Debian, Ubuntu, RHEL, CentOS, Rocky, Alma, Fedora, Arch, Alpine, openSUSE)
+- Reports distro version and pretty name
+- Agent adapts to init system (systemd, OpenRC, SysVinit)
 
 ### Security
 - SSH login attempts (successful/failed)
@@ -178,9 +184,13 @@ echo "*/5 * * * * root /usr/local/bin/ned-agent" > /etc/cron.d/ned
 ```bash
 NED_API_URL="https://getneddy.com/api"
 NED_TOKEN="your-server-token"
-NED_INTERVAL=300  # seconds (5 min)
-NED_SERVICES="nginx,mysql,php-fpm"  # auto-detected if empty
+# Services are auto-detected - no configuration needed!
 ```
+
+The agent automatically detects:
+- All running services via systemd/OpenRC/SysVinit
+- Linux distribution (debian, ubuntu, rhel, centos, fedora, arch, alpine, opensuse)
+- CPU cores, memory, disk mounts
 
 ### Alert Thresholds (Dashboard)
 
@@ -214,34 +224,41 @@ NED_SERVICES="nginx,mysql,php-fpm"  # auto-detected if empty
 {
   "timestamp": "2025-01-03T12:00:00Z",
   "hostname": "prod-web-1",
+  "distro": {
+    "distro": "ubuntu",
+    "version": "24.04",
+    "name": "Ubuntu 24.04.1 LTS"
+  },
   "system": {
     "uptime": 864000,
-    "load": [0.5, 0.7, 0.6],
+    "load": {"1m": 0.5, "5m": 0.7, "15m": 0.6},
     "cpu_cores": 4
   },
   "memory": {
-    "total": 8192,
-    "used": 4096,
-    "available": 4096,
-    "swap_total": 2048,
-    "swap_used": 128
+    "mem": {"total": 8192, "used": 4096, "available": 4096},
+    "swap": {"total": 2048, "used": 128}
   },
   "disks": [
-    {"mount": "/", "total": 50000, "used": 25000, "percent": 50},
-    {"mount": "/home", "total": 100000, "used": 60000, "percent": 60}
+    {"mount": "/", "total_mb": 50000, "used_mb": 25000, "percent": 50},
+    {"mount": "/home", "total_mb": 100000, "used_mb": 60000, "percent": 60}
   ],
   "services": [
     {"name": "nginx", "status": "running"},
     {"name": "mysql", "status": "running"},
-    {"name": "php-fpm", "status": "running"}
+    {"name": "php8.3-fpm", "status": "running"},
+    {"name": "sshd", "status": "running"},
+    {"name": "cron", "status": "running"}
   ],
   "security": {
     "ssh_failed_24h": 150,
-    "f2b_banned": 3,
-    "f2b_total_bans": 47
+    "f2b_currently_banned": 3,
+    "f2b_total_banned": 47,
+    "last_attack": "Jan  3 10:42:15"
   }
 }
 ```
+
+Services are auto-detected from the running system - no hardcoded list needed.
 
 ## Contributing
 
