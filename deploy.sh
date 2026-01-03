@@ -1,0 +1,76 @@
+#!/bin/bash
+#
+# Deploy Ned server to production
+# Usage: ./deploy.sh
+#
+
+set -e
+
+REMOTE_USER="paul"
+REMOTE_HOST="193.43.134.164"
+REMOTE_PATH="/home/app.getneddy.com"
+LOCAL_PATH="$(dirname "$0")/server"
+
+echo "🚀 Deploying Ned to $REMOTE_HOST..."
+
+# Build assets
+echo "📦 Building assets..."
+cd "$LOCAL_PATH" && npm run build
+cd - > /dev/null
+
+# Files/folders to sync (excluding vendor, node_modules, .env, etc.)
+rsync -avz --delete \
+    --exclude 'vendor/' \
+    --exclude 'node_modules/' \
+    --exclude '.env' \
+    --exclude 'storage/logs/*' \
+    --exclude 'storage/framework/cache/data/*' \
+    --exclude 'storage/framework/sessions/*' \
+    --exclude 'storage/framework/views/*' \
+    --exclude 'database/database.sqlite' \
+    --exclude '.git/' \
+    "$LOCAL_PATH/" \
+    "$REMOTE_USER@$REMOTE_HOST:/tmp/ned-deploy/"
+
+echo "📦 Files synced to temp location"
+
+# Run remote commands as the web user
+ssh "$REMOTE_USER@$REMOTE_HOST" << 'ENDSSH'
+set -e
+
+REMOTE_PATH="/home/app.getneddy.com"
+
+# Copy files with correct ownership (exclude public_html symlink)
+sudo rsync -a --delete \
+    --exclude 'vendor/' \
+    --exclude 'node_modules/' \
+    --exclude '.env' \
+    --exclude 'storage/' \
+    --exclude 'database/database.sqlite' \
+    --exclude 'public_html' \
+    /tmp/ned-deploy/ "$REMOTE_PATH/"
+
+# Ensure public_html symlink exists (CyberPanel uses this as docroot)
+if [ ! -L "$REMOTE_PATH/public_html" ]; then
+    sudo ln -sf "$REMOTE_PATH/public" "$REMOTE_PATH/public_html"
+    sudo chown -h appge4880:appge4880 "$REMOTE_PATH/public_html"
+fi
+
+# Fix ownership
+sudo chown -R appge4880:appge4880 "$REMOTE_PATH/"
+
+# Clear caches
+sudo -u appge4880 php "$REMOTE_PATH/artisan" view:clear
+sudo -u appge4880 php "$REMOTE_PATH/artisan" config:clear
+sudo -u appge4880 php "$REMOTE_PATH/artisan" route:clear
+
+# Run migrations if needed
+sudo -u appge4880 php "$REMOTE_PATH/artisan" migrate --force
+
+echo "✅ Deployment complete!"
+ENDSSH
+
+# Cleanup
+ssh "$REMOTE_USER@$REMOTE_HOST" "rm -rf /tmp/ned-deploy"
+
+echo "🎉 Ned deployed successfully!"

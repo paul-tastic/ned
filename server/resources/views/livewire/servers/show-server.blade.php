@@ -39,6 +39,38 @@
         </div>
     @endif
 
+    <!-- Active Issues -->
+    @if($latestMetric && $server->status !== 'online')
+        <div class="rounded-lg p-4 mb-6 @if($server->status === 'critical') bg-red-900/20 border border-red-800 @else bg-amber-900/20 border border-amber-800 @endif">
+            <h3 class="font-semibold mb-3 flex items-center gap-2 @if($server->status === 'critical') text-red-400 @else text-amber-400 @endif">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                {{ ucfirst($server->status) }} Status
+            </h3>
+            <ul class="space-y-1 text-sm">
+                @if($latestMetric->memory_percent >= 95)
+                    <li class="text-red-400">• Memory critical: {{ number_format($latestMetric->memory_percent, 0) }}% used</li>
+                @elseif($latestMetric->memory_percent >= 80)
+                    <li class="text-amber-400">• Memory high: {{ number_format($latestMetric->memory_percent, 0) }}% used</li>
+                @endif
+                @if($latestMetric->max_disk_percent >= 95)
+                    <li class="text-red-400">• Disk critical: {{ number_format($latestMetric->max_disk_percent, 0) }}% full</li>
+                @elseif($latestMetric->max_disk_percent >= 80)
+                    <li class="text-amber-400">• Disk high: {{ number_format($latestMetric->max_disk_percent, 0) }}% full</li>
+                @endif
+                @if($latestMetric->normalized_load >= 2)
+                    <li class="text-red-400">• CPU overloaded: {{ number_format($latestMetric->normalized_load * 100, 0) }}% ({{ $latestMetric->load_1m }} load on {{ $latestMetric->cpu_cores }} cores)</li>
+                @elseif($latestMetric->normalized_load >= 1.5)
+                    <li class="text-amber-400">• CPU load high: {{ number_format($latestMetric->normalized_load * 100, 0) }}% ({{ $latestMetric->load_1m }} load on {{ $latestMetric->cpu_cores }} cores)</li>
+                @endif
+                @if($latestMetric->failed_services_count > 0)
+                    <li class="text-amber-400">• {{ $latestMetric->failed_services_count }} service(s) not running</li>
+                @endif
+            </ul>
+        </div>
+    @endif
+
     <!-- Stats Grid -->
     @if($latestMetric)
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -82,7 +114,7 @@
                             <div class="flex justify-between text-sm mb-1">
                                 <span class="font-mono text-zinc-400">{{ $disk['mount'] }}</span>
                                 <span class="@if($disk['percent'] >= 80) text-amber-400 @elseif($disk['percent'] >= 95) text-red-400 @endif">
-                                    {{ $disk['percent'] }}% ({{ $disk['used'] }} / {{ $disk['total'] }})
+                                    {{ $disk['percent'] }}% ({{ number_format($disk['used_mb'] / 1024, 1) }}GB / {{ number_format($disk['total_mb'] / 1024, 1) }}GB)
                                 </span>
                             </div>
                             <div class="h-2 bg-zinc-700 rounded-full overflow-hidden">
@@ -104,10 +136,10 @@
             <div class="bg-zinc-800 rounded-lg p-6 mb-8">
                 <h3 class="font-semibold mb-4">Services</h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    @foreach($latestMetric->services as $service => $status)
+                    @foreach($latestMetric->services as $service)
                         <div class="flex items-center gap-2 bg-zinc-900 rounded-lg px-3 py-2">
-                            <div class="w-2 h-2 rounded-full {{ $status === 'running' ? 'bg-emerald-400' : 'bg-red-400' }}"></div>
-                            <span class="text-sm font-mono">{{ $service }}</span>
+                            <div class="w-2 h-2 rounded-full {{ $service['status'] === 'running' ? 'bg-emerald-400' : 'bg-red-400' }}"></div>
+                            <span class="text-sm font-mono">{{ $service['name'] }}</span>
                         </div>
                     @endforeach
                 </div>

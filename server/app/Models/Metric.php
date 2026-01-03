@@ -112,7 +112,9 @@ class Metric extends Model
         }
 
         $failed = 0;
-        foreach ($this->services as $service => $status) {
+        foreach ($this->services as $service) {
+            // Handle both array format [{name, status}] and key-value format {name: status}
+            $status = is_array($service) ? ($service['status'] ?? 'unknown') : $service;
             if ($status !== 'running') {
                 $failed++;
             }

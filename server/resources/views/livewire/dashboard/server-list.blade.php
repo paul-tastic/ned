@@ -88,6 +88,20 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Issue Summary -->
+                        @if($server->status === 'warning' || $server->status === 'critical')
+                            @php
+                                $issues = [];
+                                if ($server->latest_metric->memory_percent >= 80) $issues[] = 'Memory';
+                                if ($server->latest_metric->max_disk_percent >= 80) $issues[] = 'Disk';
+                                if ($server->latest_metric->normalized_load >= 1.5) $issues[] = 'CPU';
+                                if ($server->latest_metric->failed_services_count > 0) $issues[] = $server->latest_metric->failed_services_count . ' service(s)';
+                            @endphp
+                            <div class="mt-3 pt-3 border-t border-zinc-700 text-xs @if($server->status === 'critical') text-red-400 @else text-amber-400 @endif">
+                                {{ implode(', ', $issues) }} high
+                            </div>
+                        @endif
                     @else
                         <div class="text-sm text-zinc-500 text-center py-4">
                             Waiting for first metrics...
