@@ -18,8 +18,19 @@ Route::get('/health', [MetricsController::class, 'health']);
 
 // Version endpoint - no auth required
 Route::get('/version', function () {
-    $versionFile = base_path('../VERSION');
-    $version = file_exists($versionFile) ? trim(file_get_contents($versionFile)) : 'unknown';
+    // Check multiple possible locations for VERSION file
+    $locations = [
+        base_path('VERSION'),           // In server directory
+        base_path('../VERSION'),        // In repo root (if server is subdir)
+    ];
+
+    $version = 'unknown';
+    foreach ($locations as $path) {
+        if (file_exists($path)) {
+            $version = trim(file_get_contents($path));
+            break;
+        }
+    }
 
     return response()->json([
         'version' => $version,
