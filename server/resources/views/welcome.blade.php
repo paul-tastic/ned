@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Ned - Server Monitoring Dashboard</title>
+        <title>ned - Server Monitoring Dashboard</title>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
         <link rel="icon" href="/favicon.ico" sizes="32x32">
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -17,7 +17,7 @@
                 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
                     <a href="/" class="flex items-center gap-3">
                         <x-ned-logo class="h-10 w-10" />
-                        <span class="text-xl font-bold">Ned</span>
+                        <span class="text-xl font-bold">ned</span>
                     </a>
                     <div class="flex items-center gap-4">
                         @auth
@@ -41,7 +41,7 @@
                             "Excuse me, I believe you have my... server metrics."
                         </p>
                         <p class="text-lg text-zinc-300 mb-10">
-                            Ned is a lightweight, open-source server monitoring tool.
+                            ned is a lightweight, open-source server monitoring tool.
                             A tiny bash agent runs on your servers and pushes metrics to your dashboard.
                             No bloat. No complexity. Just the essentials.
                         </p>
@@ -100,7 +100,7 @@
             <!-- Footer -->
             <footer class="border-t border-zinc-800 py-8">
                 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-zinc-500 text-sm">
-                    <p>Ned - The Never-Ending Daemon. Milton's brother who actually monitors things.</p>
+                    <p>ned - The Never-Ending Daemon. Milton's brother who actually monitors things.</p>
                     <p class="mt-2">
                         <a href="https://github.com/paul-tastic/ned" class="hover:text-emerald-500 transition">GitHub</a>
                         <span class="mx-2">|</span>
