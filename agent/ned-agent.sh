@@ -64,15 +64,11 @@ get_cpu_cores() {
 
 get_memory() {
     if command -v free &> /dev/null; then
-        free -m | awk '/^Mem:/ {
-            printf "{\"total\": %d, \"used\": %d, \"available\": %d}", $2, $3, $7
-        }'
-        echo -n ", \"swap\": "
-        free -m | awk '/^Swap:/ {
-            printf "{\"total\": %d, \"used\": %d}", $2, $3
-        }'
+        local mem=$(free -m | awk '/^Mem:/ { printf "{\"total\": %d, \"used\": %d, \"available\": %d}", $2, $3, $7 }')
+        local swap=$(free -m | awk '/^Swap:/ { printf "{\"total\": %d, \"used\": %d}", $2, $3 }')
+        echo "{\"mem\": ${mem}, \"swap\": ${swap}}"
     else
-        echo '"total": 0, "used": 0, "available": 0}, "swap": {"total": 0, "used": 0}'
+        echo '{"mem": {"total": 0, "used": 0, "available": 0}, "swap": {"total": 0, "used": 0}}'
     fi
 }
 
@@ -180,7 +176,7 @@ build_payload() {
         "load": $(get_load_average),
         "cpu_cores": $(get_cpu_cores)
     },
-    "memory": {$(get_memory)},
+    "memory": $(get_memory),
     "disks": $(get_disks),
     "services": $(get_services),
     "security": $(get_security)
