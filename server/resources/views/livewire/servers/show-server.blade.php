@@ -1,4 +1,7 @@
-<div wire:poll.30s>
+<div x-data="{ autoRefresh: true }" x-init="$watch('autoRefresh', val => localStorage.setItem('ned-auto-refresh', val)); autoRefresh = localStorage.getItem('ned-auto-refresh') !== 'false'">
+    <!-- Polling wrapper -->
+    <div x-show="autoRefresh" wire:poll.30s></div>
+
     <!-- Header -->
     <div class="flex items-center justify-between mb-8">
         <div class="flex items-center gap-4">
@@ -21,9 +24,24 @@
                 <span class="text-zinc-400 font-mono text-sm">{{ $server->hostname }}</span>
             @endif
         </div>
-        <button wire:click="$set('showDeleteModal', true)" class="px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg text-sm font-semibold transition-colors">
-            Delete
-        </button>
+        <div class="flex items-center gap-4">
+            <label class="flex items-center gap-2 text-sm text-zinc-400 cursor-pointer">
+                <span>Auto-refresh</span>
+                <button
+                    @click="autoRefresh = !autoRefresh"
+                    :class="autoRefresh ? 'bg-emerald-600' : 'bg-zinc-600'"
+                    class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors"
+                >
+                    <span
+                        :class="autoRefresh ? 'translate-x-5' : 'translate-x-1'"
+                        class="inline-block h-3 w-3 transform rounded-full bg-white transition-transform"
+                    ></span>
+                </button>
+            </label>
+            <button wire:click="$set('showDeleteModal', true)" class="px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg text-sm font-semibold transition-colors">
+                Delete
+            </button>
+        </div>
     </div>
 
     <!-- Active Issues -->

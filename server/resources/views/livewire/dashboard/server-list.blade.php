@@ -1,4 +1,24 @@
-<div wire:poll.30s>
+<div x-data="{ autoRefresh: true }" x-init="$watch('autoRefresh', val => localStorage.setItem('ned-auto-refresh', val)); autoRefresh = localStorage.getItem('ned-auto-refresh') !== 'false'">
+    <!-- Auto-refresh Toggle -->
+    <div class="flex justify-end mb-4">
+        <label class="flex items-center gap-2 text-sm text-zinc-400 cursor-pointer">
+            <span>Auto-refresh</span>
+            <button
+                @click="autoRefresh = !autoRefresh"
+                :class="autoRefresh ? 'bg-emerald-600' : 'bg-zinc-600'"
+                class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors"
+            >
+                <span
+                    :class="autoRefresh ? 'translate-x-5' : 'translate-x-1'"
+                    class="inline-block h-3 w-3 transform rounded-full bg-white transition-transform"
+                ></span>
+            </button>
+        </label>
+    </div>
+
+    <!-- Polling wrapper -->
+    <div x-show="autoRefresh" wire:poll.30s></div>
+
     <!-- Stats Overview -->
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
         <div class="bg-zinc-800 rounded-lg p-4">
