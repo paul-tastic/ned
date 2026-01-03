@@ -44,6 +44,19 @@ jobs:
       - name: Generate application key
         run: php artisan key:generate
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build assets
+        run: npm run build
+
       - name: Run Tests with Coverage
         run: php artisan test --coverage --min=60 --coverage-clover=coverage.xml
 
