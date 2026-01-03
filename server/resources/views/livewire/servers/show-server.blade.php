@@ -21,23 +21,10 @@
                 <span class="text-zinc-400 font-mono text-sm">{{ $server->hostname }}</span>
             @endif
         </div>
-        <div class="flex items-center gap-2">
-            <button wire:click="regenerateToken" class="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-sm font-semibold transition-colors">
-                Regenerate Token
-            </button>
-            <button wire:click="$set('showDeleteModal', true)" class="px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg text-sm font-semibold transition-colors">
-                Delete
-            </button>
-        </div>
+        <button wire:click="$set('showDeleteModal', true)" class="px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg text-sm font-semibold transition-colors">
+            Delete
+        </button>
     </div>
-
-    <!-- New Token Alert -->
-    @if($newToken)
-        <div class="bg-red-900/20 border border-red-800 rounded-lg p-4 mb-6">
-            <p class="text-red-400 text-sm font-semibold mb-2">New token generated - save it now!</p>
-            <code class="block bg-zinc-900 p-3 rounded text-sm font-mono break-all text-zinc-300">{{ $newToken }}</code>
-        </div>
-    @endif
 
     <!-- Active Issues -->
     @if($latestMetric && $server->status !== 'online')

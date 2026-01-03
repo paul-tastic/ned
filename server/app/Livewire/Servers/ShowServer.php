@@ -12,8 +12,6 @@ class ShowServer extends Component
 
     public bool $showDeleteModal = false;
 
-    public ?string $newToken = null;
-
     public function mount(Server $server)
     {
         // Authorize access
@@ -22,13 +20,6 @@ class ShowServer extends Component
         }
 
         $this->server = $server;
-    }
-
-    public function regenerateToken()
-    {
-        $token = Server::generateToken();
-        $this->server->update(['token' => $token['hashed']]);
-        $this->newToken = $token['plain'];
     }
 
     public function delete()
