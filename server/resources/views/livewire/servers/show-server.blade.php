@@ -1,7 +1,16 @@
-<div x-data="{ autoRefresh: true }" x-init="$watch('autoRefresh', val => localStorage.setItem('ned-auto-refresh', val)); autoRefresh = localStorage.getItem('ned-auto-refresh') !== 'false'">
-    <!-- Polling wrapper -->
-    <div x-show="autoRefresh" wire:poll.30s></div>
-
+<div
+    x-data="{
+        autoRefresh: localStorage.getItem('ned-auto-refresh') !== 'false',
+        interval: null,
+        startPolling() {
+            if (this.interval) clearInterval(this.interval);
+            this.interval = setInterval(() => {
+                if (this.autoRefresh) $wire.$refresh();
+            }, 30000);
+        }
+    }"
+    x-init="startPolling(); $watch('autoRefresh', val => localStorage.setItem('ned-auto-refresh', val))"
+>
     <!-- Header -->
     <div class="flex items-center justify-between mb-8">
         <div class="flex items-center gap-4">
