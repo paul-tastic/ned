@@ -135,14 +135,19 @@ get_security() {
     local ssh_failed=0
     local f2b_banned=0
     local f2b_total=0
+    local last_attack=""
 
-    # SSH failed attempts (last 24h)
+    # SSH failed attempts (last 24h) and last attack timestamp
     if command -v journalctl &> /dev/null; then
         ssh_failed=$(journalctl -u sshd --since "24 hours ago" 2>/dev/null | grep -c "Failed password\|Invalid user" || echo "0")
+        # Get timestamp of most recent failed attempt
+        last_attack=$(journalctl -u sshd -n 100 2>/dev/null | grep "Failed password\|Invalid user" | tail -1 | awk '{print $1, $2, $3}' || echo "")
     elif [ -f /var/log/auth.log ]; then
         ssh_failed=$(grep -c "Failed password\|Invalid user" /var/log/auth.log 2>/dev/null || echo "0")
+        last_attack=$(grep "Failed password\|Invalid user" /var/log/auth.log 2>/dev/null | tail -1 | awk '{print $1, $2, $3}' || echo "")
     elif [ -f /var/log/secure ]; then
         ssh_failed=$(grep -c "Failed password\|Invalid user" /var/log/secure 2>/dev/null || echo "0")
+        last_attack=$(grep "Failed password\|Invalid user" /var/log/secure 2>/dev/null | tail -1 | awk '{print $1, $2, $3}' || echo "")
     fi
 
     # fail2ban stats
@@ -156,8 +161,14 @@ get_security() {
     f2b_banned="${f2b_banned:-0}"
     f2b_total="${f2b_total:-0}"
 
-    printf '{"ssh_failed_24h": %d, "f2b_currently_banned": %d, "f2b_total_banned": %d}' \
-        "${ssh_failed//[^0-9]/}" "${f2b_banned//[^0-9]/}" "${f2b_total//[^0-9]/}"
+    # Build JSON with optional last_attack field
+    if [ -n "$last_attack" ]; then
+        printf '{"ssh_failed_24h": %d, "f2b_currently_banned": %d, "f2b_total_banned": %d, "last_attack": "%s"}' \
+            "${ssh_failed//[^0-9]/}" "${f2b_banned//[^0-9]/}" "${f2b_total//[^0-9]/}" "$last_attack"
+    else
+        printf '{"ssh_failed_24h": %d, "f2b_currently_banned": %d, "f2b_total_banned": %d, "last_attack": null}' \
+            "${ssh_failed//[^0-9]/}" "${f2b_banned//[^0-9]/}" "${f2b_total//[^0-9]/}"
+    fi
 }
 
 # -----------------------------------------------------------------------------
