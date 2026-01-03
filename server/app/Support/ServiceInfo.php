@@ -37,6 +37,7 @@ class ServiceInfo
         'dovecot' => 'IMAP/POP3 mail server',
         'exim' => 'Mail transfer agent',
         'sendmail' => 'Mail transfer agent',
+        'opendkim' => 'DKIM email signing service',
 
         // System services
         'sshd' => 'Secure Shell (SSH) server',
@@ -50,6 +51,12 @@ class ServiceInfo
         'udev' => 'Device manager',
         'NetworkManager' => 'Network management daemon',
         'networkd' => 'Network management daemon',
+        'auditd' => 'System auditing daemon',
+        'irqbalance' => 'IRQ balancing daemon',
+        'tuned' => 'Dynamic system tuning daemon',
+        'rpcbind' => 'RPC port mapper service',
+        'gssproxy' => 'GSSAPI credential proxy',
+        'rc-local' => 'Legacy startup script runner',
 
         // Security
         'fail2ban' => 'Intrusion prevention (bans IPs)',
@@ -90,6 +97,25 @@ class ServiceInfo
         'avahi-daemon' => 'mDNS/DNS-SD service discovery',
         'bluetooth' => 'Bluetooth service',
         'snapd' => 'Snap package manager',
+        'qemu-guest-agent' => 'QEMU VM guest agent',
+
+        // FTP
+        'pure-ftpd' => 'Pure-FTPd file transfer server',
+        'vsftpd' => 'Very Secure FTP daemon',
+        'proftpd' => 'ProFTPD file transfer server',
+
+        // DNS
+        'pdns' => 'PowerDNS server',
+        'named' => 'BIND DNS server',
+        'unbound' => 'DNS resolver',
+
+        // Hosting panels (LiteSpeed/CyberPanel)
+        'lshttpd' => 'LiteSpeed web server',
+        'lscpd' => 'LiteSpeed control panel daemon',
+        'lsmcd' => 'LiteSpeed memcached replacement',
+
+        // Security agents
+        'monarx-agent' => 'Monarx security monitoring agent',
     ];
 
     public static function get(string $serviceName): ?string

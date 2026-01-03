@@ -127,11 +127,25 @@
                         @php
                             $description = \App\Support\ServiceInfo::get($service['name']);
                         @endphp
-                        <div class="flex items-center gap-2 bg-zinc-900 rounded-lg px-3 py-2 group relative">
+                        <div
+                            x-data="{ showTooltip: false, timeout: null }"
+                            @mouseenter="timeout = setTimeout(() => showTooltip = true, 800)"
+                            @mouseleave="clearTimeout(timeout); showTooltip = false"
+                            class="flex items-center gap-2 bg-zinc-900 rounded-lg px-3 py-2 relative"
+                        >
                             <div class="w-2 h-2 rounded-full {{ $service['status'] === 'running' ? 'bg-emerald-400' : 'bg-red-400' }}"></div>
                             <span class="text-sm font-mono">{{ $service['name'] }}</span>
                             @if($description)
-                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-zinc-700 text-xs text-zinc-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                                <div
+                                    x-show="showTooltip"
+                                    x-transition:enter="transition ease-out duration-150"
+                                    x-transition:enter-start="opacity-0"
+                                    x-transition:enter-end="opacity-100"
+                                    x-transition:leave="transition ease-in duration-100"
+                                    x-transition:leave-start="opacity-100"
+                                    x-transition:leave-end="opacity-0"
+                                    class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-zinc-700 text-xs text-zinc-200 rounded-lg pointer-events-none whitespace-nowrap z-10"
+                                >
                                     {{ $description }}
                                 </div>
                             @endif
