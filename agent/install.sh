@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 # Defaults
 INSTALL_DIR="/usr/local/bin"
 CONFIG_DIR="/etc/ned"
-AGENT_URL="https://raw.githubusercontent.com/yourname/ned/main/agent/ned-agent.sh"
+AGENT_URL="https://raw.githubusercontent.com/paul-tastic/ned/master/agent/ned-agent.sh"
 CRON_INTERVAL="5"  # minutes
 
 # Parse arguments

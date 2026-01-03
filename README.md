@@ -138,7 +138,7 @@ Meet Ned - the basement-dwelling, bespectacled server watcher who keeps an eye o
 
 ```bash
 # Clone the repo
-git clone https://github.com/engagingdev/ned.git
+git clone https://github.com/paul-tastic/ned.git
 cd ned
 
 # Install dependencies
