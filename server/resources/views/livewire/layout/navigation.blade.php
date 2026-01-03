@@ -25,7 +25,7 @@ new class extends Component
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}" wire:navigate class="flex items-center gap-2">
                         <x-ned-logo class="h-9 w-9" />
-                        <span class="text-lg font-semibold text-white">Ned</span>
+                        <span class="text-lg font-semibold text-white">ned</span>
                     </a>
                 </div>
 
