@@ -363,15 +363,25 @@
     @endif
 
     <!-- Last Update -->
-    <div class="text-center text-zinc-500 text-sm">
+    <div class="text-center text-sm">
         @if($server->last_seen_at)
-            Last update {{ $server->last_seen_at->diffForHumans() }}
+            <span class="
+                @if($server->last_seen_at->diffInMinutes(now()) < 2)
+                    text-emerald-400
+                @elseif($server->last_seen_at->diffInMinutes(now()) < 5)
+                    text-amber-400
+                @else
+                    text-red-400
+                @endif
+            ">
+                Last update {{ $server->last_seen_at->diffForHumans() }}
+            </span>
             @if($server->agent_version)
-                <span class="mx-2">•</span>
-                Agent v{{ $server->agent_version }}
+                <span class="mx-2 text-zinc-500">•</span>
+                <span class="text-zinc-500">Agent v{{ $server->agent_version }}</span>
             @endif
         @else
-            Never connected
+            <span class="text-zinc-500">Never connected</span>
         @endif
     </div>
 

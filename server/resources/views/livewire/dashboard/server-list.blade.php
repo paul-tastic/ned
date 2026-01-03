@@ -49,7 +49,17 @@
                             "></div>
                             <h3 class="font-semibold text-lg">{{ $server->name }}</h3>
                         </div>
-                        <span class="text-xs text-zinc-500">
+                        <span class="text-xs
+                            @if(!$server->last_seen_at)
+                                text-zinc-500
+                            @elseif($server->last_seen_at->diffInMinutes(now()) < 2)
+                                text-emerald-400
+                            @elseif($server->last_seen_at->diffInMinutes(now()) < 5)
+                                text-amber-400
+                            @else
+                                text-red-400
+                            @endif
+                        ">
                             @if($server->last_seen_at)
                                 {{ $server->last_seen_at->diffForHumans() }}
                             @else
