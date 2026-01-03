@@ -16,6 +16,17 @@ use Illuminate\Support\Facades\Route;
 // Health check - no auth required
 Route::get('/health', [MetricsController::class, 'health']);
 
+// Version endpoint - no auth required
+Route::get('/version', function () {
+    $versionFile = base_path('../VERSION');
+    $version = file_exists($versionFile) ? trim(file_get_contents($versionFile)) : 'unknown';
+
+    return response()->json([
+        'version' => $version,
+        'app' => 'ned-server',
+    ]);
+});
+
 // Agent endpoints - require server token
 Route::middleware(AuthenticateServer::class)->group(function () {
     Route::post('/metrics', [MetricsController::class, 'store']);

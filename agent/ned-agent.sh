@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Ned Agent - Server monitoring agent
-# https://github.com/yourname/ned
+# https://github.com/paul-tastic/ned
 #
 # Collects system metrics and POSTs them to your Ned dashboard.
 # "Excuse me, I believe you have my... server metrics."
@@ -10,6 +10,9 @@
 #
 
 set -e
+
+# Agent version
+NED_AGENT_VERSION="0.1.0"
 
 # Load config
 CONFIG_FILE="${NED_CONFIG:-/etc/ned/config}"
@@ -314,6 +317,7 @@ build_payload() {
     cat <<EOF
 {
     "timestamp": "$timestamp",
+    "agent_version": "$NED_AGENT_VERSION",
     "hostname": "$NED_HOSTNAME",
     "distro": $(get_distro_info),
     "system": {
