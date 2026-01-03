@@ -1,0 +1,14 @@
+# Ned Agent Configuration
+# Copy this to /etc/ned/config and update with your values
+
+# Required: Your Ned API endpoint
+NED_API_URL="https://your-ned-instance.com/api"
+
+# Required: Server authentication token (get this from dashboard when adding a server)
+NED_TOKEN="your-server-token-here"
+
+# Optional: Override hostname (defaults to system hostname)
+# NED_HOSTNAME="my-custom-hostname"
+
+# Optional: Enable debug mode (prints payload instead of sending)
+# NED_DEBUG=1
