@@ -167,15 +167,57 @@ php artisan serve
 
 ### Agent (On Each Server)
 
-```bash
-# One-line install
-curl -sSL https://getneddy.com/install.sh | bash -s -- --token YOUR_SERVER_TOKEN
+#### Option 1: One-Line Install (Recommended)
 
-# Or manually
-wget https://your-ned-instance.com/agent.sh -O /usr/local/bin/ned-agent
-chmod +x /usr/local/bin/ned-agent
-echo "*/5 * * * * root /usr/local/bin/ned-agent" > /etc/cron.d/ned
+```bash
+curl -fsSL https://app.getneddy.com/install.sh | bash -s -- \
+  --token YOUR_SERVER_TOKEN \
+  --api https://app.getneddy.com
 ```
+
+This will:
+- Download the agent to `/usr/local/bin/ned-agent`
+- Create config at `/etc/ned/config`
+- Set up a cron job (every 5 minutes by default)
+- Send first metrics immediately
+
+#### Option 2: Manual Installation
+
+If you prefer to see what's happening (or can't use curl piped to bash):
+
+```bash
+# 1. Download the agent
+sudo curl -fsSL https://raw.githubusercontent.com/paul-tastic/ned/master/agent/ned-agent.sh \
+  -o /usr/local/bin/ned-agent
+sudo chmod +x /usr/local/bin/ned-agent
+
+# 2. Create config directory
+sudo mkdir -p /etc/ned
+
+# 3. Create config file
+sudo tee /etc/ned/config > /dev/null <<EOF
+NED_API_URL="https://app.getneddy.com"
+NED_TOKEN="YOUR_SERVER_TOKEN"
+EOF
+sudo chmod 600 /etc/ned/config
+
+# 4. Test the agent
+sudo /usr/local/bin/ned-agent
+
+# 5. Set up cron (every 5 minutes)
+echo "*/5 * * * * root /usr/local/bin/ned-agent >> /var/log/ned.log 2>&1" | sudo tee /etc/cron.d/ned
+```
+
+#### Updating the Agent
+
+When a new version is available, the dashboard will show an "Update Available" notice. To update:
+
+```bash
+sudo curl -fsSL https://raw.githubusercontent.com/paul-tastic/ned/master/agent/ned-agent.sh \
+  -o /usr/local/bin/ned-agent
+```
+
+Your config at `/etc/ned/config` is preserved.
 
 ## Configuration
 
@@ -223,6 +265,7 @@ The agent automatically detects:
 ```json
 {
   "timestamp": "2025-01-03T12:00:00Z",
+  "agent_version": "0.2.0",
   "hostname": "prod-web-1",
   "distro": {
     "distro": "ubuntu",
@@ -242,6 +285,9 @@ The agent automatically detects:
     {"mount": "/", "total_mb": 50000, "used_mb": 25000, "percent": 50},
     {"mount": "/home", "total_mb": 100000, "used_mb": 60000, "percent": 60}
   ],
+  "network": [
+    {"interface": "eth0", "rx_bytes": 123456789, "tx_bytes": 987654321}
+  ],
   "services": [
     {"name": "nginx", "status": "running"},
     {"name": "mysql", "status": "running"},
@@ -252,8 +298,7 @@ The agent automatically detects:
   "security": {
     "ssh_failed_24h": 150,
     "f2b_currently_banned": 3,
-    "f2b_total_banned": 47,
-    "last_attack": "Jan  3 10:42:15"
+    "f2b_total_banned": 47
   }
 }
 ```
