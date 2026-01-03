@@ -85,13 +85,8 @@ Meet ned - the basement-dwelling, bespectacled server watcher who keeps an eye o
 - [x] Agent version tracking with update notifications
 
 ### Coming Soon
-- [ ] Email alert notifications
-- [ ] Configurable thresholds per server
-- [ ] Historical metric graphs
-- [ ] HTTP endpoint monitoring
-- [ ] SSL certificate expiry alerts
-- [ ] Config-driven collection (disable network/security/services per agent)
-- [ ] Slack/Discord/Telegram integrations
+
+See the [Issues tab](https://github.com/paul-tastic/ned/issues) for the full roadmap and feature requests.
 
 ## Tech Stack
 
@@ -132,12 +127,22 @@ php artisan serve
 
 ### Agent (On Each Server)
 
+First, get your server token from the ned dashboard:
+1. Log in to your ned dashboard
+2. Click "Add Server" and give it a name
+3. Copy the token shown (it's only displayed once!)
+
+The `--api` URL should be where you installed ned. Examples:
+- `https://ned.yourdomain.com` - Your own domain
+- `https://192.168.1.100` - Direct IP (with SSL)
+- `http://192.168.1.100:8000` - Local dev server
+
 #### Option 1: One-Line Install (Recommended)
 
 ```bash
-curl -fsSL https://app.getneddy.com/install.sh | bash -s -- \
+curl -fsSL https://ned.yourdomain.com/install.sh | sudo bash -s -- \
   --token YOUR_SERVER_TOKEN \
-  --api https://app.getneddy.com
+  --api https://ned.yourdomain.com
 ```
 
 This will:
@@ -159,9 +164,9 @@ sudo chmod +x /usr/local/bin/ned-agent
 # 2. Create config directory
 sudo mkdir -p /etc/ned
 
-# 3. Create config file
+# 3. Create config file (use YOUR ned dashboard URL)
 sudo tee /etc/ned/config > /dev/null <<EOF
-NED_API_URL="https://app.getneddy.com"
+NED_API_URL="https://ned.yourdomain.com"
 NED_TOKEN="YOUR_SERVER_TOKEN"
 EOF
 sudo chmod 600 /etc/ned/config
@@ -189,8 +194,8 @@ Your config at `/etc/ned/config` is preserved.
 ### Agent Config (`/etc/ned/config`)
 
 ```bash
-NED_API_URL="https://getneddy.com/api"
-NED_TOKEN="your-server-token"
+NED_API_URL="https://ned.yourdomain.com"  # Your ned dashboard URL
+NED_TOKEN="your-server-token"              # From the ned dashboard
 # Services are auto-detected - no configuration needed!
 ```
 
