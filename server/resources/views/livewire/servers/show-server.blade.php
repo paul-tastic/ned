@@ -1,4 +1,4 @@
-<div>
+<div wire:poll.30s>
     <!-- Header -->
     <div class="flex items-center justify-between mb-8">
         <div class="flex items-center gap-4">

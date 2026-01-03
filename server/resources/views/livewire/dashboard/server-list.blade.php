@@ -1,4 +1,4 @@
-<div>
+<div wire:poll.30s>
     <!-- Stats Overview -->
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
         <div class="bg-zinc-800 rounded-lg p-4">
