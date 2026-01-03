@@ -204,7 +204,7 @@ send_metrics() {
         -H "Content-Type: application/json" \
         -H "Authorization: Bearer $NED_TOKEN" \
         -d "$payload" \
-        "$NED_API_URL/metrics" 2>&1)
+        "${NED_API_URL}/api/metrics" 2>&1)
 
     local http_code=$(echo "$response" | tail -n1)
     local body=$(echo "$response" | sed '$d')

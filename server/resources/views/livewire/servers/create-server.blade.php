@@ -45,7 +45,7 @@
                         type="text"
                         id="name"
                         wire:model="name"
-                        class="w-full px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                        class="w-full px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white placeholder-zinc-500"
                         placeholder="Production Web Server"
                         required
                     >
@@ -58,7 +58,7 @@
                         type="text"
                         id="hostname"
                         wire:model="hostname"
-                        class="w-full px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent font-mono"
+                        class="w-full px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent font-mono text-white placeholder-zinc-500"
                         placeholder="web-01.example.com"
                     >
                     @error('hostname') <span class="text-red-400 text-sm mt-1">{{ $message }}</span> @enderror

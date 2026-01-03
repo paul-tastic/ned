@@ -11,7 +11,7 @@ class ServerList extends Component
     public function render()
     {
         $servers = Server::where('user_id', Auth::id())
-            ->orderByRaw("FIELD(status, 'critical', 'warning', 'offline', 'online')")
+            ->orderByRaw("CASE status WHEN 'critical' THEN 1 WHEN 'warning' THEN 2 WHEN 'offline' THEN 3 WHEN 'online' THEN 4 ELSE 5 END")
             ->orderBy('name')
             ->get()
             ->map(function ($server) {
