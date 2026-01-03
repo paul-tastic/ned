@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ned - Server Monitoring for People Who Have Better Things to Do</title>
+    <meta name="description" content="Self-hosted server monitoring that doesn't require a TPS report. Open source, simple, and it won't ask you to come in on Saturday.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖥️</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap');
+        .font-mono { font-family: 'IBM Plex Mono', monospace; }
+        .font-sans { font-family: 'Inter', sans-serif; }
+        .gradient-text {
+            background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .terminal {
+            background: #1a1a2e;
+            border: 1px solid #2d2d44;
+        }
+        .blink {
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+        .flair {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin: 2px;
+        }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-100 font-sans">
+    <!-- Hero -->
+    <div class="min-h-screen flex flex-col">
+        <nav class="p-6 flex justify-between items-center max-w-6xl mx-auto w-full">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🖥️</span>
+                <span class="font-mono font-semibold text-xl">ned</span>
+            </div>
+            <a href="https://github.com/paul-tastic/ned" class="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                GitHub
+            </a>
+        </nav>
+
+        <main class="flex-1 flex items-center justify-center px-6">
+            <div class="max-w-4xl mx-auto text-center">
+                <div class="mb-6 flex justify-center gap-2 flex-wrap">
+                    <span class="flair bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Open Source</span>
+                    <span class="flair bg-blue-500/20 text-blue-400 border border-blue-500/30">Self-Hosted</span>
+                    <span class="flair bg-purple-500/20 text-purple-400 border border-purple-500/30">No Subscription</span>
+                    <span class="flair bg-amber-500/20 text-amber-400 border border-amber-500/30">15 Pieces of Flair</span>
+                </div>
+
+                <h1 class="text-4xl md:text-6xl font-bold mb-6">
+                    <span class="gradient-text">Excuse me,</span><br>
+                    I believe you have my...<br>
+                    <span class="text-white">server metrics.</span>
+                </h1>
+
+                <p class="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
+                    Ned is the server monitoring tool for indie developers who'd rather be coding than configuring Datadog.
+                    Self-hosted, open source, and it won't make you fill out a TPS report.
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+                    <a href="https://github.com/paul-tastic/ned#quick-start" class="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 rounded-lg font-semibold transition-colors">
+                        Get Started
+                    </a>
+                    <a href="https://github.com/paul-tastic/ned" class="px-8 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg font-semibold transition-colors border border-gray-700">
+                        View on GitHub
+                    </a>
+                </div>
+
+                <!-- Terminal mockup -->
+                <div class="terminal rounded-lg overflow-hidden text-left max-w-2xl mx-auto">
+                    <div class="flex items-center gap-2 px-4 py-3 bg-gray-900/50 border-b border-gray-800">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span class="ml-2 text-gray-500 text-sm font-mono">bash</span>
+                    </div>
+                    <div class="p-4 font-mono text-sm">
+                        <div class="text-gray-500"># Install the agent on any server</div>
+                        <div class="text-emerald-400">$ curl -fsSL https://getneddy.com/install.sh | bash</div>
+                        <div class="mt-4 text-gray-500"># That's it. That's the whole thing.</div>
+                        <div class="text-gray-500"># No YAML. No Docker. No 47-page setup guide.</div>
+                        <div class="mt-2 text-gray-400">$<span class="blink">_</span></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Features -->
+    <section class="py-24 px-6 border-t border-gray-800">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-4">The Minimum Viable Monitoring</h2>
+            <p class="text-gray-400 text-center mb-16 max-w-2xl mx-auto">
+                We could've added 37 integrations and a Kubernetes operator. But then we'd have to come in on Saturday. And we're not gonna do that.
+            </p>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                    <div class="text-3xl mb-4">📊</div>
+                    <h3 class="text-xl font-semibold mb-2">The Metrics That Matter</h3>
+                    <p class="text-gray-400">CPU, memory, disk, services, and security. If your server's on fire, you'll know. If it's fine, you won't get 47 Slack notifications about it.</p>
+                </div>
+
+                <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                    <div class="text-3xl mb-4">🔔</div>
+                    <h3 class="text-xl font-semibold mb-2">Alerts Without the Noise</h3>
+                    <p class="text-gray-400">Email, Slack, Discord, webhooks. Set thresholds that make sense. Get notified when things break, not when they're doing exactly what they should.</p>
+                </div>
+
+                <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                    <div class="text-3xl mb-4">🔒</div>
+                    <h3 class="text-xl font-semibold mb-2">Your Servers, Your Data</h3>
+                    <p class="text-gray-400">Self-hosted means your metrics stay on your infrastructure. No SaaS pricing tiers. No "contact sales for enterprise." Just deploy and go.</p>
+                </div>
+
+                <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                    <div class="text-3xl mb-4">🐚</div>
+                    <h3 class="text-xl font-semibold mb-2">Bash Agent, Zero Dependencies</h3>
+                    <p class="text-gray-400">No Python runtime. No Node.js. No "please install these 14 packages first." Just bash and curl. If your server has a shell, it can run Ned.</p>
+                </div>
+
+                <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                    <div class="text-3xl mb-4">🎨</div>
+                    <h3 class="text-xl font-semibold mb-2">Dashboard That Doesn't Suck</h3>
+                    <p class="text-gray-400">A clean web UI that shows you what's happening. No training required. No "powerful query language" to learn. Just look at the screen.</p>
+                </div>
+
+                <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                    <div class="text-3xl mb-4">☕</div>
+                    <h3 class="text-xl font-semibold mb-2">Laravel + SQLite</h3>
+                    <p class="text-gray-400">Powered by boring, reliable tech. One PHP app. One database file. Back it up by copying a file. Restore it the same way. Revolutionary.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- The Stapler Section -->
+    <section class="py-24 px-6 bg-gray-900/30 border-t border-gray-800">
+        <div class="max-w-4xl mx-auto text-center">
+            <div class="text-6xl mb-6">📎</div>
+            <h2 class="text-3xl font-bold mb-4">About the Name</h2>
+            <p class="text-gray-400 text-lg mb-6">
+                <strong class="text-white">N</strong>ever-<strong class="text-white">E</strong>nding <strong class="text-white">D</strong>aemon
+            </p>
+            <p class="text-gray-500 max-w-2xl mx-auto">
+                Ned is the guy in the basement who keeps an eye on things. He's not flashy. He doesn't need 15 pieces of flair to do his job.
+                He just quietly watches your servers and lets you know if something's wrong. And yes, he has very strong opinions about his stapler.
+            </p>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-24 px-6 border-t border-gray-800">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl font-bold mb-4">Ready to Stop Overpaying for Metrics?</h2>
+            <p class="text-gray-400 mb-8">
+                Ned is free, open source, and MIT licensed. Deploy it in 5 minutes. Monitor unlimited servers. Never see a pricing page again.
+            </p>
+            <a href="https://github.com/paul-tastic/ned#quick-start" class="inline-block px-8 py-3 bg-emerald-600 hover:bg-emerald-500 rounded-lg font-semibold transition-colors">
+                Read the Docs
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-8 px-6 border-t border-gray-800">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-gray-500 text-sm">
+            <div class="flex items-center gap-2">
+                <span>🖥️</span>
+                <span class="font-mono">ned</span>
+                <span>•</span>
+                <span>MIT License</span>
+            </div>
+            <div class="flex gap-6">
+                <a href="https://github.com/paul-tastic/ned" class="hover:text-white transition-colors">GitHub</a>
+                <a href="https://github.com/paul-tastic/ned/blob/master/DEPLOYMENT.md" class="hover:text-white transition-colors">Docs</a>
+                <a href="https://github.com/paul-tastic/ned/blob/master/SECURITY.md" class="hover:text-white transition-colors">Security</a>
+                <a href="https://github.com/paul-tastic/ned/blob/master/CONTRIBUTING.md" class="hover:text-white transition-colors">Contribute</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
