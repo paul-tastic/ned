@@ -47,10 +47,12 @@ class ShowServer extends Component
             ->reverse();
 
         $latestMetric = $metrics->last();
+        $previousMetric = $metrics->count() > 1 ? $metrics->slice(-2, 1)->first() : null;
 
         return view('livewire.servers.show-server', [
             'metrics' => $metrics,
             'latestMetric' => $latestMetric,
+            'previousMetric' => $previousMetric,
         ]);
     }
 }

@@ -160,54 +160,80 @@
                 <h3 class="font-semibold mb-4">Network I/O</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     @foreach($latestMetric->network as $iface)
+                        @php
+                            // Find previous metric data for this interface
+                            $prevIface = null;
+                            $rxRate = null;
+                            $txRate = null;
+                            if ($previousMetric && $previousMetric->network) {
+                                foreach ($previousMetric->network as $prev) {
+                                    if ($prev['interface'] === $iface['interface']) {
+                                        $prevIface = $prev;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            // Calculate rate if we have previous data
+                            if ($prevIface && $latestMetric->recorded_at && $previousMetric->recorded_at) {
+                                $seconds = $latestMetric->recorded_at->diffInSeconds($previousMetric->recorded_at);
+                                if ($seconds > 0) {
+                                    $rxDelta = $iface['rx_bytes'] - $prevIface['rx_bytes'];
+                                    $txDelta = $iface['tx_bytes'] - $prevIface['tx_bytes'];
+                                    // Handle counter reset (reboot)
+                                    if ($rxDelta >= 0 && $txDelta >= 0) {
+                                        $rxRate = $rxDelta / $seconds;
+                                        $txRate = $txDelta / $seconds;
+                                    }
+                                }
+                            }
+
+                            // Format helper
+                            $formatBytes = function($bytes) {
+                                if ($bytes >= 1099511627776) return number_format($bytes / 1099511627776, 2) . ' TB';
+                                if ($bytes >= 1073741824) return number_format($bytes / 1073741824, 2) . ' GB';
+                                if ($bytes >= 1048576) return number_format($bytes / 1048576, 1) . ' MB';
+                                if ($bytes >= 1024) return number_format($bytes / 1024, 0) . ' KB';
+                                return $bytes . ' B';
+                            };
+
+                            $formatRate = function($bytesPerSec) {
+                                if ($bytesPerSec >= 1073741824) return number_format($bytesPerSec / 1073741824, 2) . ' GB/s';
+                                if ($bytesPerSec >= 1048576) return number_format($bytesPerSec / 1048576, 1) . ' MB/s';
+                                if ($bytesPerSec >= 1024) return number_format($bytesPerSec / 1024, 0) . ' KB/s';
+                                return number_format($bytesPerSec, 0) . ' B/s';
+                            };
+                        @endphp
                         <div class="bg-zinc-900 rounded-lg p-4">
                             <div class="text-zinc-400 text-sm mb-2 font-mono">{{ $iface['interface'] }}</div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <div class="text-zinc-500 text-xs mb-1">↓ Received</div>
-                                    <div class="text-lg font-bold text-emerald-400">
-                                        @php
-                                            $rx = $iface['rx_bytes'];
-                                            if ($rx >= 1099511627776) {
-                                                $rxFormatted = number_format($rx / 1099511627776, 2) . ' TB';
-                                            } elseif ($rx >= 1073741824) {
-                                                $rxFormatted = number_format($rx / 1073741824, 2) . ' GB';
-                                            } elseif ($rx >= 1048576) {
-                                                $rxFormatted = number_format($rx / 1048576, 1) . ' MB';
-                                            } elseif ($rx >= 1024) {
-                                                $rxFormatted = number_format($rx / 1024, 0) . ' KB';
-                                            } else {
-                                                $rxFormatted = $rx . ' B';
-                                            }
-                                        @endphp
-                                        {{ $rxFormatted }}
-                                    </div>
+                                    <div class="text-zinc-500 text-xs mb-1">↓ Download</div>
+                                    @if($rxRate !== null)
+                                        <div class="text-lg font-bold text-emerald-400">{{ $formatRate($rxRate) }}</div>
+                                        <div class="text-zinc-500 text-xs">{{ $formatBytes($iface['rx_bytes']) }} total</div>
+                                    @else
+                                        <div class="text-lg font-bold text-emerald-400">{{ $formatBytes($iface['rx_bytes']) }}</div>
+                                        <div class="text-zinc-500 text-xs">total since boot</div>
+                                    @endif
                                 </div>
                                 <div>
-                                    <div class="text-zinc-500 text-xs mb-1">↑ Sent</div>
-                                    <div class="text-lg font-bold text-blue-400">
-                                        @php
-                                            $tx = $iface['tx_bytes'];
-                                            if ($tx >= 1099511627776) {
-                                                $txFormatted = number_format($tx / 1099511627776, 2) . ' TB';
-                                            } elseif ($tx >= 1073741824) {
-                                                $txFormatted = number_format($tx / 1073741824, 2) . ' GB';
-                                            } elseif ($tx >= 1048576) {
-                                                $txFormatted = number_format($tx / 1048576, 1) . ' MB';
-                                            } elseif ($tx >= 1024) {
-                                                $txFormatted = number_format($tx / 1024, 0) . ' KB';
-                                            } else {
-                                                $txFormatted = $tx . ' B';
-                                            }
-                                        @endphp
-                                        {{ $txFormatted }}
-                                    </div>
+                                    <div class="text-zinc-500 text-xs mb-1">↑ Upload</div>
+                                    @if($txRate !== null)
+                                        <div class="text-lg font-bold text-blue-400">{{ $formatRate($txRate) }}</div>
+                                        <div class="text-zinc-500 text-xs">{{ $formatBytes($iface['tx_bytes']) }} total</div>
+                                    @else
+                                        <div class="text-lg font-bold text-blue-400">{{ $formatBytes($iface['tx_bytes']) }}</div>
+                                        <div class="text-zinc-500 text-xs">total since boot</div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
                     @endforeach
                 </div>
-                <div class="text-zinc-500 text-xs mt-3">Cumulative since boot</div>
+                @if($rxRate !== null)
+                    <div class="text-zinc-500 text-xs mt-3">Rate calculated from last {{ $latestMetric->recorded_at->diffInSeconds($previousMetric->recorded_at) }}s interval</div>
+                @endif
             </div>
         @endif
 
