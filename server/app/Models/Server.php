@@ -20,6 +20,7 @@ class Server extends Model
         'status',
         'last_seen_at',
         'is_active',
+        'agent_version',
     ];
 
     protected $casts = [

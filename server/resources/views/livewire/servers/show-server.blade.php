@@ -303,10 +303,38 @@
         </div>
     @endif
 
+    <!-- Agent Version Warning -->
+    @php
+        $latestVersion = trim(file_get_contents(base_path('VERSION')));
+        $agentOutdated = $server->agent_version && version_compare($server->agent_version, $latestVersion, '<');
+    @endphp
+    @if($agentOutdated)
+        <div class="bg-amber-900/20 border border-amber-800 rounded-lg p-4 mb-4">
+            <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                </svg>
+                <div>
+                    <p class="text-amber-400 font-semibold">Agent Update Available</p>
+                    <p class="text-zinc-400 text-sm">Running v{{ $server->agent_version }}, latest is v{{ $latestVersion }}</p>
+                </div>
+            </div>
+            <div class="mt-3">
+                <code class="block bg-zinc-900 p-2 rounded text-xs font-mono text-zinc-300 overflow-x-auto">
+                    curl -fsSL https://getneddy.com/install.sh | sudo bash
+                </code>
+            </div>
+        </div>
+    @endif
+
     <!-- Last Update -->
     <div class="text-center text-zinc-500 text-sm">
         @if($server->last_seen_at)
             Last update {{ $server->last_seen_at->diffForHumans() }}
+            @if($server->agent_version)
+                <span class="mx-2">•</span>
+                Agent v{{ $server->agent_version }}
+            @endif
         @else
             Never connected
         @endif

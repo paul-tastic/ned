@@ -26,8 +26,14 @@ class MetricsController extends Controller
         // Create metric from agent payload
         $metric = Metric::fromAgentPayload($server, $request->all());
 
-        // Update server status based on metrics
+        // Update server info and status
         $server->markAsSeen();
+
+        // Update agent version if provided
+        if ($agentVersion = $request->input('agent_version')) {
+            $server->update(['agent_version' => $agentVersion]);
+        }
+
         $this->updateServerStatus($server, $metric);
 
         return response()->json([
