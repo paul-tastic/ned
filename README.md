@@ -1,33 +1,33 @@
-# Ned
+# ned
 
 > "Excuse me, I believe you have my... server metrics."
 
-Meet Ned - the basement-dwelling, bespectacled server watcher who keeps an eye on your infrastructure so you don't have to. Self-hosted monitoring and alerting for indie developers.
+Meet ned - the basement-dwelling, bespectacled server watcher who keeps an eye on your infrastructure so you don't have to. Self-hosted monitoring for indie developers.
 
-**N**ever-**E**nding **D**aemon. Or just Ned. He's cool with either.
+**N**ever-**E**nding **D**aemon. Or just ned. He's cool with either.
 
-## Why Ned?
+## Why ned?
 
 - **Free & Open Source** - MIT licensed, self-host on your own infra
 - **Dead Simple Setup** - One curl command to install the agent
 - **Push-Based** - Agents push metrics to your dashboard (no firewall config needed)
 - **Multi-Server** - Monitor all your boxes from one dashboard
-- **Alert Channels** - Email, Slack, Discord, Telegram, push notifications
+- **No Auto-Updates** - You control when to update (dashboard tells you when new versions are available)
 
-## What Ned Watches
+## What ned Watches
 
 ### System Metrics
-- CPU usage (1m, 5m, 15m load averages)
+- CPU usage (1m, 5m, 15m load averages, normalized by core count)
 - Memory usage (used, available, swap)
 - Disk usage (per mount point)
-- Network I/O (bytes in/out)
+- Network I/O (bytes in/out per interface)
 - Uptime
 
 ### Services
 - **Auto-detect running services** - No configuration needed, agent discovers what's running
 - Supports systemd, OpenRC (Alpine), and SysVinit
 - Baseline services (sshd, cron) always monitored if present
-- Process monitoring (is X running?)
+- Visual status indicators (green=running, red=stopped)
 
 ### Linux Distribution Support
 - Automatic distro detection (Debian, Ubuntu, RHEL, CentOS, Rocky, Alma, Fedora, Arch, Alpine, openSUSE)
@@ -35,18 +35,9 @@ Meet Ned - the basement-dwelling, bespectacled server watcher who keeps an eye o
 - Agent adapts to init system (systemd, OpenRC, SysVinit)
 
 ### Security
-- SSH login attempts (successful/failed)
-- fail2ban stats (banned IPs, jail status)
-- SSL certificate expiry
-
-### Web
-- HTTP endpoint checks (status code, response time)
-- SSL certificate monitoring
-
-### Application (Future)
-- Laravel queue health
-- Laravel failed jobs
-- Custom application metrics via API
+- SSH failed login attempts (last 24 hours)
+- fail2ban stats (currently banned, total banned)
+- Last attack timestamp
 
 ## Architecture
 
@@ -79,54 +70,28 @@ Meet Ned - the basement-dwelling, bespectacled server watcher who keeps an eye o
       └──────────────┘  └──────────────┘  └──────────────┘
 ```
 
-## MVP Scope (v0.1)
+## Current Status (v0.2.0)
 
-### Agent (Bash Script)
-- [ ] System metrics collection (CPU, RAM, disk)
-- [ ] Service status detection
-- [ ] JSON payload generation
-- [ ] HTTPS POST to API with auth token
-- [ ] Cron-based execution (every 1-5 min configurable)
-- [ ] One-line install script
+### Implemented
+- [x] System metrics collection (CPU, RAM, disk, network)
+- [x] Service auto-detection (systemd, OpenRC, SysVinit)
+- [x] Security metrics (SSH failures, fail2ban stats)
+- [x] One-line agent install script
+- [x] Server registration with unique tokens
+- [x] Metrics ingestion API with token auth
+- [x] SQLite storage
+- [x] Dashboard with status indicators (online/warning/critical)
+- [x] Server detail view with all metrics
+- [x] Agent version tracking with update notifications
 
-### API (Laravel)
-- [ ] Server registration endpoint
-- [ ] Metrics ingestion endpoint
-- [ ] Authentication (API tokens per server)
-- [ ] SQLite storage for simplicity
-- [ ] Threshold configuration per metric
-- [ ] Alert triggers
-
-### Dashboard (Livewire)
-- [ ] Server list with status indicators
-- [ ] Individual server detail view
-- [ ] Real-time-ish updates (polling)
-- [ ] Metric graphs (last 24h, 7d, 30d)
-- [ ] Alert history
-
-### Alerts (v0.1)
-- [ ] Email notifications
-- [ ] Configurable thresholds (CPU > 90%, disk > 85%, etc.)
-- [ ] Alert cooldown (don't spam)
-
-## Future Versions
-
-### v0.2
-- Slack/Discord/Telegram integrations
-- HTTP endpoint monitoring
-- SSL certificate expiry alerts
-- fail2ban integration
-
-### v0.3
-- Flutter mobile app
-- Push notifications
-- Multi-user support
-- Team/org features
-
-### v0.4
-- Laravel-specific monitoring (queues, failed jobs, horizon)
-- Custom metric API
-- Webhooks
+### Coming Soon
+- [ ] Email alert notifications
+- [ ] Configurable thresholds per server
+- [ ] Historical metric graphs
+- [ ] HTTP endpoint monitoring
+- [ ] SSL certificate expiry alerts
+- [ ] Config-driven collection (disable network/security/services per agent)
+- [ ] Slack/Discord/Telegram integrations
 
 ## Tech Stack
 
@@ -251,14 +216,6 @@ The agent automatically detects:
 
 ### Authenticated (Server Token)
 - `POST /api/metrics` - Submit metrics payload
-- `GET /api/config` - Get server configuration
-
-### Authenticated (User Token)
-- `GET /api/servers` - List servers
-- `GET /api/servers/{id}` - Server details
-- `GET /api/servers/{id}/metrics` - Historical metrics
-- `PUT /api/servers/{id}/thresholds` - Update alert thresholds
-- `GET /api/alerts` - Alert history
 
 ## Metrics Payload Example
 
