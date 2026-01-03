@@ -83,21 +83,71 @@ get_disks() {
 }
 
 # -----------------------------------------------------------------------------
+# Linux Distribution Detection
+# -----------------------------------------------------------------------------
+
+get_distro() {
+    # Returns: debian, ubuntu, rhel, centos, fedora, arch, alpine, opensuse, or unknown
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        case "$ID" in
+            debian) echo "debian" ;;
+            ubuntu) echo "ubuntu" ;;
+            rhel|redhat) echo "rhel" ;;
+            centos|rocky|almalinux) echo "centos" ;;
+            fedora) echo "fedora" ;;
+            arch|manjaro) echo "arch" ;;
+            alpine) echo "alpine" ;;
+            opensuse*|sles) echo "opensuse" ;;
+            *) echo "$ID" ;;
+        esac
+    elif [ -f /etc/debian_version ]; then
+        echo "debian"
+    elif [ -f /etc/redhat-release ]; then
+        echo "rhel"
+    else
+        echo "unknown"
+    fi
+}
+
+get_distro_info() {
+    local distro=$(get_distro)
+    local version=""
+    local name=""
+
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        version="${VERSION_ID:-unknown}"
+        name="${PRETTY_NAME:-$ID}"
+    fi
+
+    printf '{"distro": "%s", "version": "%s", "name": "%s"}' "$distro" "$version" "$name"
+}
+
+# -----------------------------------------------------------------------------
 # Service Detection
 # -----------------------------------------------------------------------------
 
-check_service() {
+# Baseline services we always want to monitor if they exist
+BASELINE_SERVICES="sshd ssh cron crond"
+
+check_service_status() {
     local service="$1"
     if command -v systemctl &> /dev/null; then
         if systemctl is-active --quiet "$service" 2>/dev/null; then
             echo "running"
-        elif systemctl is-enabled --quiet "$service" 2>/dev/null; then
-            echo "stopped"
         else
-            echo "not_installed"
+            echo "stopped"
         fi
     elif command -v service &> /dev/null; then
         if service "$service" status &>/dev/null; then
+            echo "running"
+        else
+            echo "stopped"
+        fi
+    elif command -v rc-service &> /dev/null; then
+        # Alpine Linux
+        if rc-service "$service" status &>/dev/null; then
             echo "running"
         else
             echo "stopped"
@@ -107,15 +157,97 @@ check_service() {
     fi
 }
 
-get_services() {
-    # Common services to check
-    local services=("nginx" "apache2" "httpd" "mysql" "mariadb" "postgresql" "redis" "php-fpm" "php8.4-fpm" "php8.3-fpm" "php8.2-fpm" "lsws" "docker" "fail2ban" "sshd")
+service_exists() {
+    local service="$1"
+    if command -v systemctl &> /dev/null; then
+        systemctl list-unit-files "${service}.service" 2>/dev/null | grep -q "$service"
+    elif [ -f "/etc/init.d/$service" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
 
+get_running_services() {
+    # Auto-detect running services from systemd or init
+    local services=()
+
+    if command -v systemctl &> /dev/null; then
+        # Get all running services from systemd
+        # Filter to common daemon services, excluding system internals
+        while IFS= read -r line; do
+            local unit=$(echo "$line" | awk '{print $1}' | sed 's/\.service$//')
+            # Skip internal systemd services
+            case "$unit" in
+                systemd-*|dbus*|polkit*|user@*|session-*|getty*|*.slice|*.target|*.mount|*.socket|-.*)
+                    continue
+                    ;;
+            esac
+            services+=("$unit")
+        done < <(systemctl list-units --type=service --state=running --no-legend 2>/dev/null | head -50)
+    elif command -v rc-status &> /dev/null; then
+        # Alpine Linux with OpenRC
+        while IFS= read -r line; do
+            local svc=$(echo "$line" | awk '{print $1}')
+            [ -n "$svc" ] && services+=("$svc")
+        done < <(rc-status -s 2>/dev/null | grep started | head -50)
+    elif command -v service &> /dev/null; then
+        # SysVinit fallback - check init.d scripts
+        for script in /etc/init.d/*; do
+            [ -x "$script" ] || continue
+            local svc=$(basename "$script")
+            case "$svc" in
+                README|skeleton|rc*|functions|halt|killall|single|*.dpkg-*)
+                    continue
+                    ;;
+            esac
+            if service "$svc" status &>/dev/null 2>&1; then
+                services+=("$svc")
+            fi
+        done
+    fi
+
+    # Return unique services
+    printf '%s\n' "${services[@]}" | sort -u
+}
+
+get_services() {
     echo "["
     local first=true
-    for svc in "${services[@]}"; do
-        status=$(check_service "$svc")
-        if [ "$status" != "not_installed" ]; then
+    local seen=()
+
+    # First, auto-detect all running services
+    while IFS= read -r svc; do
+        [ -z "$svc" ] && continue
+
+        # Skip if already seen
+        for s in "${seen[@]}"; do
+            [ "$s" = "$svc" ] && continue 2
+        done
+        seen+=("$svc")
+
+        local status=$(check_service_status "$svc")
+
+        if [ "$first" = true ]; then
+            first=false
+        else
+            echo -n ","
+        fi
+        printf '{"name": "%s", "status": "%s"}' "$svc" "$status"
+    done < <(get_running_services)
+
+    # Also check baseline services that might be stopped
+    for svc in $BASELINE_SERVICES; do
+        # Skip if already seen
+        for s in "${seen[@]}"; do
+            [ "$s" = "$svc" ] && continue 2
+        done
+
+        # Only add if the service exists on this system
+        if service_exists "$svc"; then
+            seen+=("$svc")
+            local status=$(check_service_status "$svc")
+
             if [ "$first" = true ]; then
                 first=false
             else
@@ -124,6 +256,7 @@ get_services() {
             printf '{"name": "%s", "status": "%s"}' "$svc" "$status"
         fi
     done
+
     echo "]"
 }
 
@@ -182,6 +315,7 @@ build_payload() {
 {
     "timestamp": "$timestamp",
     "hostname": "$NED_HOSTNAME",
+    "distro": $(get_distro_info),
     "system": {
         "uptime": $(get_uptime),
         "load": $(get_load_average),
