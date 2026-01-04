@@ -148,15 +148,15 @@ class ShowServerTest extends TestCase
         $this->assertNull($component->viewData('latestMetric'));
     }
 
-    public function test_metrics_limited_to_60(): void
+    public function test_metrics_limited_to_288(): void
     {
         $this->actingAs($this->user);
 
-        // Create 70 metrics
-        for ($i = 0; $i < 70; $i++) {
+        // Create 300 metrics (more than 288 limit)
+        for ($i = 0; $i < 300; $i++) {
             Metric::create([
                 'server_id' => $this->server->id,
-                'recorded_at' => now()->subMinutes(70 - $i),
+                'recorded_at' => now()->subMinutes(300 - $i),
                 'load_1m' => $i,
             ]);
         }
@@ -165,7 +165,8 @@ class ShowServerTest extends TestCase
 
         $metrics = $component->viewData('metrics');
 
-        $this->assertCount(60, $metrics);
+        // Limit is 288 (24 hours at 5-min intervals)
+        $this->assertCount(288, $metrics);
     }
 
     public function test_delete_modal_starts_hidden(): void
