@@ -64,7 +64,11 @@ class ShowServer extends Component
         $bannedIpGeo = [];
         if ($latestMetric && !empty($latestMetric->security['banned_ips'])) {
             $geoService = app(GeoIpService::class);
-            $bannedIpGeo = $geoService->lookupMany($latestMetric->security['banned_ips']);
+            // Handle both old format (array of strings) and new format (array of objects with ip/unban_at)
+            $ips = collect($latestMetric->security['banned_ips'])->map(function ($item) {
+                return is_array($item) ? ($item['ip'] ?? null) : $item;
+            })->filter()->values()->toArray();
+            $bannedIpGeo = $geoService->lookupMany($ips);
         }
 
         return view('livewire.servers.show-server', [

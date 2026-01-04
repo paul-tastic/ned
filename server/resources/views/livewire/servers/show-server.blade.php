@@ -344,13 +344,30 @@
                     <div class="mt-4">
                         <h4 class="text-sm text-zinc-400 mb-3">Currently Banned IPs</h4>
                         <div class="space-y-2">
-                            @foreach($latestMetric->security['banned_ips'] as $bannedIp)
+                            @foreach($latestMetric->security['banned_ips'] as $banned)
                                 @php
-                                    $geo = $bannedIpGeo[$bannedIp] ?? null;
+                                    // Handle both old format (string) and new format (object with ip/unban_at)
+                                    $ip = is_array($banned) ? ($banned['ip'] ?? null) : $banned;
+                                    $unbanAt = is_array($banned) ? ($banned['unban_at'] ?? null) : null;
+                                    $geo = $ip ? ($bannedIpGeo[$ip] ?? null) : null;
+
+                                    // Calculate time remaining
+                                    $timeRemaining = null;
+                                    if ($unbanAt) {
+                                        try {
+                                            $unbanTime = \Carbon\Carbon::parse($unbanAt);
+                                            $now = now();
+                                            if ($unbanTime->gt($now)) {
+                                                $mins = $unbanTime->diffInMinutes($now);
+                                                $timeRemaining = $mins . 'm remaining';
+                                            }
+                                        } catch (\Exception $e) {}
+                                    }
                                 @endphp
+                                @if($ip)
                                 <div class="flex items-center justify-between bg-zinc-900 rounded-lg px-4 py-2">
                                     <div class="flex items-center gap-3">
-                                        <code class="text-sm font-mono text-red-400">{{ $bannedIp }}</code>
+                                        <code class="text-sm font-mono text-red-400">{{ $ip }}</code>
                                         @if($geo)
                                             <span class="text-xs text-zinc-500">
                                                 {{ $geo['city'] ? $geo['city'] . ', ' : '' }}{{ $geo['country'] ?? 'Unknown' }}
@@ -361,9 +378,14 @@
                                         @endif
                                     </div>
                                     <span class="text-xs text-zinc-500">
-                                        banned for {{ floor(($latestMetric->security['f2b_bantime'] ?? 3600) / 60) }}m
+                                        @if($timeRemaining)
+                                            {{ $timeRemaining }}
+                                        @else
+                                            banned for {{ floor(($latestMetric->security['f2b_bantime'] ?? 3600) / 60) }}m
+                                        @endif
                                     </span>
                                 </div>
+                                @endif
                             @endforeach
                         </div>
                     </div>

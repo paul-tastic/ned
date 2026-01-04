@@ -362,8 +362,9 @@ get_security() {
         f2b_maxretry=$(fail2ban-client get sshd maxretry 2>/dev/null || echo "0")
         f2b_findtime=$(fail2ban-client get sshd findtime 2>/dev/null || echo "0")
 
-        # Get list of currently banned IPs
-        banned_ips=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP list:" | sed 's/.*Banned IP list:\s*//' | tr -s ' ' | sed 's/^ //')
+        # Get list of currently banned IPs with timing info
+        # Format: IP \t banned_at + duration = unban_at
+        banned_ips_raw=$(fail2ban-client get sshd banip --with-time 2>/dev/null || echo "")
     fi
 
     # Sanitize values
@@ -374,19 +375,30 @@ get_security() {
     f2b_maxretry="${f2b_maxretry:-0}"
     f2b_findtime="${f2b_findtime:-0}"
 
-    # Build banned IPs JSON array
+    # Build banned IPs JSON array with timing
     local banned_ips_json="[]"
-    if [ -n "$banned_ips" ]; then
+    if [ -n "$banned_ips_raw" ]; then
         banned_ips_json="["
         local first=true
-        for ip in $banned_ips; do
+        while IFS= read -r line; do
+            [ -z "$line" ] && continue
+            # Parse: IP \t banned_at + duration = unban_at
+            local ip=$(echo "$line" | awk '{print $1}')
+            local unban_at=$(echo "$line" | awk -F'= ' '{print $2}' | xargs)
+            [ -z "$ip" ] && continue
+
             if [ "$first" = true ]; then
                 first=false
             else
                 banned_ips_json+=","
             fi
-            banned_ips_json+="\"$ip\""
-        done
+
+            if [ -n "$unban_at" ]; then
+                banned_ips_json+="{\"ip\": \"$ip\", \"unban_at\": \"$unban_at\"}"
+            else
+                banned_ips_json+="{\"ip\": \"$ip\", \"unban_at\": null}"
+            fi
+        done <<< "$banned_ips_raw"
         banned_ips_json+="]"
     fi
 
