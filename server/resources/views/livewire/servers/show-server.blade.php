@@ -357,8 +357,8 @@
                                         try {
                                             $unbanTime = \Carbon\Carbon::parse($unbanAt);
                                             $now = now();
-                                            if ($unbanTime->gt($now)) {
-                                                $mins = $unbanTime->diffInMinutes($now);
+                                            $mins = (int) $now->diffInMinutes($unbanTime, false);
+                                            if ($mins > 0) {
                                                 $timeRemaining = $mins . 'm remaining';
                                             }
                                         } catch (\Exception $e) {}
