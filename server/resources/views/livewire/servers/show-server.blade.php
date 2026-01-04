@@ -502,6 +502,7 @@
                                     $ip = is_array($banned) ? ($banned['ip'] ?? null) : $banned;
                                     $unbanAt = is_array($banned) ? ($banned['unban_at'] ?? null) : null;
                                     $geo = $ip ? ($bannedIpGeo[$ip] ?? null) : null;
+                                    $banCount = $ip ? ($bannedIpCounts[$ip] ?? 0) : 0;
 
                                     // Calculate time remaining
                                     $timeRemaining = null;
@@ -520,6 +521,9 @@
                                 <div class="flex items-center justify-between bg-zinc-900 rounded-lg px-4 py-2">
                                     <div class="flex items-center gap-3">
                                         <code class="text-sm font-mono text-red-400">{{ $ip }}</code>
+                                        @if($banCount > 1)
+                                            <span class="text-xs text-orange-400/80">(banned {{ $banCount }}×)</span>
+                                        @endif
                                         @if($geo)
                                             <span class="text-xs text-zinc-500">
                                                 {{ $geo['city'] ? $geo['city'] . ', ' : '' }}{{ $geo['country'] ?? 'Unknown' }}

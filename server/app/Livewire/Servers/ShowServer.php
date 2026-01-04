@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Servers;
 
+use App\Models\BannedIpEvent;
 use App\Models\Server;
 use App\Services\GeoIpService;
 use Illuminate\Support\Facades\Auth;
@@ -146,6 +147,7 @@ class ShowServer extends Component
 
         // Get geo data for banned IPs (server-side lookup)
         $bannedIpGeo = [];
+        $bannedIpCounts = [];
         if ($latestMetric && !empty($latestMetric->security['banned_ips'])) {
             $geoService = app(GeoIpService::class);
             // Handle both old format (array of strings) and new format (array of objects with ip/unban_at)
@@ -153,6 +155,7 @@ class ShowServer extends Component
                 return is_array($item) ? ($item['ip'] ?? null) : $item;
             })->filter()->values()->toArray();
             $bannedIpGeo = $geoService->lookupMany($ips);
+            $bannedIpCounts = BannedIpEvent::getBanCounts($this->server->id, $ips);
         }
 
         return view('livewire.servers.show-server', [
@@ -165,6 +168,7 @@ class ShowServer extends Component
             'memoryChartData' => $memoryChartData,
             'diskChartData' => $diskChartData,
             'bannedIpGeo' => $bannedIpGeo,
+            'bannedIpCounts' => $bannedIpCounts,
         ]);
     }
 }

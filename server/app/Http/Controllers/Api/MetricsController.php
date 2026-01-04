@@ -5,11 +5,16 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Metric;
 use App\Models\Server;
+use App\Services\BanTrackingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class MetricsController extends Controller
 {
+    public function __construct(
+        private BanTrackingService $banTrackingService
+    ) {}
+
     /**
      * Receive metrics from an agent.
      * POST /api/metrics
@@ -35,6 +40,11 @@ class MetricsController extends Controller
         }
 
         $this->updateServerStatus($server, $metric);
+
+        // Track ban/unban events
+        if ($security = $request->input('security')) {
+            $this->banTrackingService->processBannedIps($server, $security);
+        }
 
         return response()->json([
             'success' => true,
