@@ -16,7 +16,24 @@
 
             <div class="bg-red-900/20 border border-red-800 rounded-lg p-4 mb-6">
                 <p class="text-red-400 text-sm font-semibold mb-2">Save this token now - you won't see it again!</p>
-                <code class="block bg-zinc-900 p-3 rounded text-sm font-mono break-all text-zinc-300">{{ $plainToken }}</code>
+                <div
+                    x-data="{ copied: false }"
+                    class="flex items-center gap-2 bg-zinc-900 p-3 rounded"
+                >
+                    <code class="flex-1 text-sm font-mono break-all text-zinc-300">{{ $plainToken }}</code>
+                    <button
+                        @click="navigator.clipboard.writeText('{{ $plainToken }}'); copied = true; setTimeout(() => copied = false, 2000)"
+                        class="flex-shrink-0 p-2 hover:bg-zinc-800 rounded transition-colors"
+                        title="Copy token"
+                    >
+                        <svg x-show="!copied" class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                        <svg x-show="copied" x-cloak class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <div class="bg-zinc-900 rounded-lg p-4 mb-6">

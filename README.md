@@ -102,6 +102,19 @@ See the [Issues tab](https://github.com/paul-tastic/ned/issues) for the full roa
 
 ### API/Dashboard (Self-Hosted)
 
+#### DNS Setup (Optional but Recommended)
+
+If you're hosting ned on its own server (or want a clean URL), set up a subdomain:
+
+1. Create an A record pointing to your server's IP:
+   - `ned.yourdomain.com` → `YOUR_SERVER_IP`
+2. Set up SSL (Let's Encrypt works great)
+3. Configure your web server (nginx/apache) to serve ned on that domain
+
+You can also install ned on the same server you're monitoring - just use `localhost` or the server's IP.
+
+#### Installation Steps
+
 ```bash
 # Clone the repo
 git clone https://github.com/paul-tastic/ned.git
@@ -277,4 +290,4 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-Built with frustration at Datadog pricing and a fondness for basement dwellers everywhere.
+*Lightweight, nimble, and quietly obsessive - just like its namesake. Built for indie devs who want to know what's happening on their servers without the enterprise bloat.*

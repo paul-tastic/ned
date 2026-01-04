@@ -33,24 +33,19 @@
                 <span class="text-zinc-400 font-mono text-sm">{{ $server->hostname }}</span>
             @endif
         </div>
-        <div class="flex items-center gap-4">
-            <label class="flex items-center gap-2 text-sm text-zinc-400 cursor-pointer">
-                <span>Auto-refresh</span>
-                <button
-                    @click="autoRefresh = !autoRefresh"
-                    :class="autoRefresh ? 'bg-emerald-600' : 'bg-zinc-600'"
-                    class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors"
-                >
-                    <span
-                        :class="autoRefresh ? 'translate-x-5' : 'translate-x-1'"
-                        class="inline-block h-3 w-3 transform rounded-full bg-white transition-transform"
-                    ></span>
-                </button>
-            </label>
-            <button wire:click="$set('showDeleteModal', true)" class="px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg text-sm font-semibold transition-colors">
-                Delete
+        <label class="flex items-center gap-2 text-sm text-zinc-400 cursor-pointer">
+            <span>Auto-refresh</span>
+            <button
+                @click="autoRefresh = !autoRefresh"
+                :class="autoRefresh ? 'bg-emerald-600' : 'bg-zinc-600'"
+                class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors"
+            >
+                <span
+                    :class="autoRefresh ? 'translate-x-5' : 'translate-x-1'"
+                    class="inline-block h-3 w-3 transform rounded-full bg-white transition-transform"
+                ></span>
             </button>
-        </div>
+        </label>
     </div>
 
     <!-- Active Issues -->
@@ -102,12 +97,17 @@
                 </div>
                 <div class="text-zinc-500 text-xs">{{ number_format($latestMetric->memory_used / 1024, 1) }}GB / {{ number_format($latestMetric->memory_total / 1024, 1) }}GB</div>
             </div>
+            @php
+                $totalDiskUsed = collect($latestMetric->disks)->sum('used_mb');
+                $totalDiskSize = collect($latestMetric->disks)->sum('total_mb');
+                $totalDiskPercent = $totalDiskSize > 0 ? ($totalDiskUsed / $totalDiskSize) * 100 : 0;
+            @endphp
             <div class="bg-zinc-800 rounded-lg p-4">
                 <div class="text-zinc-400 text-sm mb-1">Disk</div>
-                <div class="text-2xl font-bold @if($latestMetric->max_disk_percent >= 80) text-amber-400 @elseif($latestMetric->max_disk_percent >= 95) text-red-400 @endif">
-                    {{ number_format($latestMetric->max_disk_percent, 0) }}%
+                <div class="text-2xl font-bold @if($totalDiskPercent >= 80) text-amber-400 @elseif($totalDiskPercent >= 95) text-red-400 @endif">
+                    {{ number_format($totalDiskPercent, 0) }}%
                 </div>
-                <div class="text-zinc-500 text-xs">Highest partition</div>
+                <div class="text-zinc-500 text-xs">{{ number_format($totalDiskUsed / 1024, 0) }}GB / {{ number_format($totalDiskSize / 1024, 0) }}GB</div>
             </div>
             <div class="bg-zinc-800 rounded-lg p-4">
                 <div class="text-zinc-400 text-sm mb-1">Uptime</div>
@@ -317,6 +317,62 @@
                         </div>
                     @endif
                 </div>
+
+                <!-- SSH Attack Timeline -->
+                @if(count($securityChartData) > 1)
+                    @php
+                        $totalMinutes = count($securityChartData) * 5;
+                        if ($totalMinutes >= 1440) {
+                            $duration = round($totalMinutes / 1440, 1) . ' day' . ($totalMinutes >= 2880 ? 's' : '');
+                        } elseif ($totalMinutes >= 60) {
+                            $hours = round($totalMinutes / 60, 1);
+                            $duration = $hours . ' hour' . ($hours != 1 ? 's' : '');
+                        } else {
+                            $duration = $totalMinutes . ' min';
+                        }
+                    @endphp
+                    <div class="mt-6">
+                        <h4 class="text-sm text-zinc-400 mb-3">SSH Failed Attempts (last {{ $duration }})</h4>
+                        <div
+                            x-data="{
+                                data: {{ json_encode($securityChartData) }},
+                                hoveredIndex: null,
+                                get maxAttacks() {
+                                    return Math.max(1, ...this.data.map(d => d.attacks));
+                                }
+                            }"
+                            class="relative"
+                        >
+                            <div class="flex items-end gap-px h-24 bg-zinc-900 rounded-lg p-2">
+                                <template x-for="(point, index) in data" :key="index">
+                                    <div
+                                        class="flex-1 relative group cursor-pointer"
+                                        @mouseenter="hoveredIndex = index"
+                                        @mouseleave="hoveredIndex = null"
+                                    >
+                                        <div
+                                            class="w-full rounded-t transition-all"
+                                            :class="point.attacks > 10 ? 'bg-red-500' : point.attacks > 0 ? 'bg-amber-500' : 'bg-zinc-700'"
+                                            :style="'height: ' + (point.attacks > 0 ? Math.max(4, (point.attacks / maxAttacks) * 100) : 2) + '%'"
+                                        ></div>
+                                        <!-- Tooltip -->
+                                        <div
+                                            x-show="hoveredIndex === index"
+                                            x-transition
+                                            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-700 text-xs text-zinc-200 rounded whitespace-nowrap z-10"
+                                        >
+                                            <span x-text="point.time"></span>: <span x-text="point.attacks" class="font-bold"></span> new
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class="flex justify-between text-xs text-zinc-500 mt-1 px-2">
+                                <span x-text="data[0]?.time || ''"></span>
+                                <span x-text="data[data.length - 1]?.time || ''"></span>
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
         @endif
 
@@ -410,6 +466,13 @@
         @else
             <span class="text-zinc-500">Never connected</span>
         @endif
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="mt-12 pt-6 border-t border-zinc-800 text-center">
+        <button wire:click="$set('showDeleteModal', true)" class="text-sm text-zinc-500 hover:text-red-400 transition-colors">
+            Delete this server
+        </button>
     </div>
 
     <!-- Delete Modal -->

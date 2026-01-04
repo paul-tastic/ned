@@ -33,17 +33,37 @@ class ShowServer extends Component
     {
         $metrics = $this->server->metrics()
             ->latest('recorded_at')
-            ->limit(60)
+            ->limit(288) // 24 hours at 5-min intervals
             ->get()
             ->reverse();
 
-        $latestMetric = $metrics->last();
-        $previousMetric = $metrics->count() > 1 ? $metrics->slice(-2, 1)->first() : null;
+        $metricsArray = $metrics->values();
+        $latestMetric = $metricsArray->last();
+        $previousMetric = $metricsArray->count() > 1 ? $metricsArray[$metricsArray->count() - 2] : null;
+
+        // Build security chart data (SSH failed attempts delta per interval)
+        $securityChartData = [];
+        $prevSshFailed = null;
+        foreach ($metrics as $metric) {
+            $sshFailed = $metric->security['ssh_failed_24h'] ?? 0;
+            $delta = 0;
+            if ($prevSshFailed !== null && $sshFailed >= $prevSshFailed) {
+                $delta = $sshFailed - $prevSshFailed;
+            }
+            $securityChartData[] = [
+                'time' => $metric->recorded_at->format('H:i'),
+                'timestamp' => $metric->recorded_at->toIso8601String(),
+                'attacks' => $delta,
+                'total_24h' => $sshFailed,
+            ];
+            $prevSshFailed = $sshFailed;
+        }
 
         return view('livewire.servers.show-server', [
             'metrics' => $metrics,
             'latestMetric' => $latestMetric,
             'previousMetric' => $previousMetric,
+            'securityChartData' => $securityChartData,
         ]);
     }
 }
