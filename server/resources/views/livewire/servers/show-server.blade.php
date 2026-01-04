@@ -454,20 +454,18 @@
                             </div>
                         </div>
                     @endif
-                    @if(isset($latestMetric->security['f2b_total_banned']))
-                        <div class="bg-zinc-900 rounded-lg p-4 group relative">
-                            <div class="text-zinc-400 text-sm mb-1 flex items-center gap-1">
-                                Total Banned
-                                <svg class="w-3.5 h-3.5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                            </div>
-                            <div class="text-xl font-bold">{{ number_format($latestMetric->security['f2b_total_banned']) }}</div>
-                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-zinc-700 text-xs text-zinc-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
-                                Total IPs banned by fail2ban since last restart.
-                            </div>
+                    <div class="bg-zinc-900 rounded-lg p-4 group relative">
+                        <div class="text-zinc-400 text-sm mb-1 flex items-center gap-1">
+                            Banned (7d)
+                            <svg class="w-3.5 h-3.5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
                         </div>
-                    @endif
+                        <div class="text-xl font-bold">{{ number_format($totalBanned7d) }}</div>
+                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-zinc-700 text-xs text-zinc-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                            Unique IPs banned in the last 7 days.
+                        </div>
+                    </div>
                 </div>
 
                 <!-- fail2ban Settings -->

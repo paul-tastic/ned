@@ -158,6 +158,13 @@ class ShowServer extends Component
             $bannedIpCounts = BannedIpEvent::getBanCounts($this->server->id, $ips);
         }
 
+        // Get total unique IPs banned in last 7 days
+        $totalBanned7d = BannedIpEvent::where('server_id', $this->server->id)
+            ->where('event_type', 'ban')
+            ->where('event_at', '>=', now()->subDays(7))
+            ->distinct('ip_address')
+            ->count('ip_address');
+
         return view('livewire.servers.show-server', [
             'metrics' => $metrics,
             'latestMetric' => $latestMetric,
@@ -169,6 +176,7 @@ class ShowServer extends Component
             'diskChartData' => $diskChartData,
             'bannedIpGeo' => $bannedIpGeo,
             'bannedIpCounts' => $bannedIpCounts,
+            'totalBanned7d' => $totalBanned7d,
         ]);
     }
 }
