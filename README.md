@@ -12,7 +12,7 @@ Meet ned - the basement-dwelling, bespectacled server watcher who keeps an eye o
 - **Dead Simple Setup** - One curl command to install the agent
 - **Push-Based** - Agents push metrics to your dashboard (no firewall config needed)
 - **Multi-Server** - Monitor all your boxes from one dashboard
-- **No Auto-Updates** - You control when to update (dashboard tells you when new versions are available)
+- **No Auto-Updates** - You control when to update (dashboard shows when agent/dashboard versions mismatch)
 
 ## What ned Watches
 
@@ -70,19 +70,20 @@ Meet ned - the basement-dwelling, bespectacled server watcher who keeps an eye o
       └──────────────┘  └──────────────┘  └──────────────┘
 ```
 
-## Current Status (v0.2.0)
+## Current Status (v0.3.0)
 
 ### Implemented
 - [x] System metrics collection (CPU, RAM, disk, network)
 - [x] Service auto-detection (systemd, OpenRC, SysVinit)
-- [x] Security metrics (SSH failures, fail2ban stats)
+- [x] Security metrics (SSH failures, fail2ban stats, banned IPs with geo lookup)
 - [x] One-line agent install script
 - [x] Server registration with unique tokens
 - [x] Metrics ingestion API with token auth
 - [x] SQLite storage
 - [x] Dashboard with status indicators (online/warning/critical)
 - [x] Server detail view with all metrics
-- [x] Agent version tracking with update notifications
+- [x] Historical charts (CPU, memory, disk, network, security - 24h)
+- [x] Agent version tracking with mismatch warnings
 
 ### Coming Soon
 
