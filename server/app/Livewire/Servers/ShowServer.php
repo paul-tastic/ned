@@ -69,11 +69,11 @@ class ShowServer extends Component
             $rxBytes = 0;
             $txBytes = 0;
 
-            if ($prevNetwork && $network && $prevRecordedAt) {
-                $seconds = $metric->recorded_at->diffInSeconds($prevRecordedAt);
+            if ($prevNetwork !== null && $network !== null && $prevRecordedAt !== null) {
+                $seconds = abs($metric->recorded_at->diffInSeconds($prevRecordedAt));
                 if ($seconds > 0) {
-                    $rxDelta = $network['rx_bytes'] - $prevNetwork['rx_bytes'];
-                    $txDelta = $network['tx_bytes'] - $prevNetwork['tx_bytes'];
+                    $rxDelta = ($network['rx_bytes'] ?? 0) - ($prevNetwork['rx_bytes'] ?? 0);
+                    $txDelta = ($network['tx_bytes'] ?? 0) - ($prevNetwork['tx_bytes'] ?? 0);
                     // Only use if positive (ignore counter resets)
                     if ($rxDelta >= 0 && $txDelta >= 0) {
                         $rxBytes = $rxDelta;
@@ -90,6 +90,58 @@ class ShowServer extends Component
 
             $prevNetwork = $network;
             $prevRecordedAt = $metric->recorded_at;
+        }
+
+        // Build CPU chart data (normalized load over time)
+        $cpuChartData = [];
+        foreach ($metrics as $metric) {
+            $cpuCores = $metric->cpu_cores ?? 1;
+            $load = $metric->load_1m ?? 0;
+            $normalizedLoad = $cpuCores > 0 ? round(($load / $cpuCores) * 100, 1) : 0;
+
+            $cpuChartData[] = [
+                'time' => $metric->recorded_at->format('H:i') . ' UTC',
+                'value' => $normalizedLoad,
+                'load' => $load,
+                'cores' => $cpuCores,
+            ];
+        }
+
+        // Build memory chart data (usage percentage over time)
+        $memoryChartData = [];
+        foreach ($metrics as $metric) {
+            $memoryTotal = $metric->memory_total ?? 0;
+            $memoryUsed = $metric->memory_used ?? 0;
+            $memoryPercent = $memoryTotal > 0 ? round(($memoryUsed / $memoryTotal) * 100, 1) : 0;
+
+            $memoryChartData[] = [
+                'time' => $metric->recorded_at->format('H:i') . ' UTC',
+                'value' => $memoryPercent,
+                'used' => $memoryUsed,
+                'total' => $memoryTotal,
+            ];
+        }
+
+        // Build disk chart data (max disk usage percentage over time)
+        $diskChartData = [];
+        foreach ($metrics as $metric) {
+            $maxPercent = 0;
+            $maxMount = '/';
+            if (!empty($metric->disks)) {
+                foreach ($metric->disks as $disk) {
+                    $percent = $disk['percent'] ?? 0;
+                    if ($percent > $maxPercent) {
+                        $maxPercent = $percent;
+                        $maxMount = $disk['mount'] ?? '/';
+                    }
+                }
+            }
+
+            $diskChartData[] = [
+                'time' => $metric->recorded_at->format('H:i') . ' UTC',
+                'value' => round($maxPercent, 1),
+                'mount' => $maxMount,
+            ];
         }
 
         // Get geo data for banned IPs (server-side lookup)
@@ -109,6 +161,9 @@ class ShowServer extends Component
             'previousMetric' => $previousMetric,
             'securityChartData' => $securityChartData,
             'networkChartData' => $networkChartData,
+            'cpuChartData' => $cpuChartData,
+            'memoryChartData' => $memoryChartData,
+            'diskChartData' => $diskChartData,
             'bannedIpGeo' => $bannedIpGeo,
         ]);
     }

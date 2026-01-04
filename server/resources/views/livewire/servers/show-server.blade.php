@@ -118,6 +118,143 @@
             </div>
         </div>
 
+        <!-- Resource History Charts -->
+        @if(count($cpuChartData) > 1)
+            <div class="bg-zinc-800 rounded-lg p-6 mb-8">
+                <h3 class="font-semibold mb-4">Resource History</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- CPU Chart -->
+                    <div>
+                        <h4 class="text-sm text-zinc-400 mb-2">CPU Load</h4>
+                        <div
+                            x-data="{
+                                data: {{ json_encode($cpuChartData) }},
+                                hoveredIndex: null,
+                                get maxValue() {
+                                    return Math.max(100, ...this.data.map(d => d.value));
+                                }
+                            }"
+                            class="relative"
+                        >
+                            <div class="flex items-end gap-px h-20 bg-zinc-900 rounded-lg p-2">
+                                <template x-for="(point, index) in data" :key="index">
+                                    <div
+                                        class="flex-1 relative cursor-pointer h-full flex items-end"
+                                        @mouseenter="hoveredIndex = index"
+                                        @mouseleave="hoveredIndex = null"
+                                    >
+                                        <div
+                                            class="w-full rounded-t transition-all"
+                                            :class="point.value >= 150 ? 'bg-red-500' : point.value >= 100 ? 'bg-amber-500' : 'bg-cyan-500/70'"
+                                            :style="'height: ' + Math.max(2, (point.value / maxValue) * 100) + '%'"
+                                        ></div>
+                                        <div
+                                            x-show="hoveredIndex === index"
+                                            x-transition
+                                            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-700 text-xs text-zinc-200 rounded whitespace-nowrap z-10"
+                                        >
+                                            <span x-text="point.time"></span><br>
+                                            <span x-text="point.value + '%'" class="font-bold"></span>
+                                            <span class="text-zinc-400" x-text="'(' + point.load + '/' + point.cores + ')'"></span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class="flex justify-between text-xs text-zinc-500 mt-1">
+                                <span x-text="data[0]?.time || ''"></span>
+                                <span x-text="data[data.length - 1]?.time || ''"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Memory Chart -->
+                    <div>
+                        <h4 class="text-sm text-zinc-400 mb-2">Memory</h4>
+                        <div
+                            x-data="{
+                                data: {{ json_encode($memoryChartData) }},
+                                hoveredIndex: null,
+                                formatMB(mb) {
+                                    return (mb / 1024).toFixed(1) + ' GB';
+                                }
+                            }"
+                            class="relative"
+                        >
+                            <div class="flex items-end gap-px h-20 bg-zinc-900 rounded-lg p-2">
+                                <template x-for="(point, index) in data" :key="index">
+                                    <div
+                                        class="flex-1 relative cursor-pointer h-full flex items-end"
+                                        @mouseenter="hoveredIndex = index"
+                                        @mouseleave="hoveredIndex = null"
+                                    >
+                                        <div
+                                            class="w-full rounded-t transition-all"
+                                            :class="point.value >= 95 ? 'bg-red-500' : point.value >= 80 ? 'bg-amber-500' : 'bg-violet-500/70'"
+                                            :style="'height: ' + Math.max(2, point.value) + '%'"
+                                        ></div>
+                                        <div
+                                            x-show="hoveredIndex === index"
+                                            x-transition
+                                            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-700 text-xs text-zinc-200 rounded whitespace-nowrap z-10"
+                                        >
+                                            <span x-text="point.time"></span><br>
+                                            <span x-text="point.value + '%'" class="font-bold"></span>
+                                            <span class="text-zinc-400" x-text="'(' + formatMB(point.used) + '/' + formatMB(point.total) + ')'"></span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class="flex justify-between text-xs text-zinc-500 mt-1">
+                                <span x-text="data[0]?.time || ''"></span>
+                                <span x-text="data[data.length - 1]?.time || ''"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Disk Chart -->
+                    <div>
+                        <h4 class="text-sm text-zinc-400 mb-2">Disk (max)</h4>
+                        <div
+                            x-data="{
+                                data: {{ json_encode($diskChartData) }},
+                                hoveredIndex: null
+                            }"
+                            class="relative"
+                        >
+                            <div class="flex items-end gap-px h-20 bg-zinc-900 rounded-lg p-2">
+                                <template x-for="(point, index) in data" :key="index">
+                                    <div
+                                        class="flex-1 relative cursor-pointer h-full flex items-end"
+                                        @mouseenter="hoveredIndex = index"
+                                        @mouseleave="hoveredIndex = null"
+                                    >
+                                        <div
+                                            class="w-full rounded-t transition-all"
+                                            :class="point.value >= 95 ? 'bg-red-500' : point.value >= 80 ? 'bg-amber-500' : 'bg-orange-500/70'"
+                                            :style="'height: ' + Math.max(2, point.value) + '%'"
+                                        ></div>
+                                        <div
+                                            x-show="hoveredIndex === index"
+                                            x-transition
+                                            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-700 text-xs text-zinc-200 rounded whitespace-nowrap z-10"
+                                        >
+                                            <span x-text="point.time"></span><br>
+                                            <span x-text="point.value + '%'" class="font-bold"></span>
+                                            <span class="text-zinc-400" x-text="point.mount"></span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class="flex justify-between text-xs text-zinc-500 mt-1">
+                                <span x-text="data[0]?.time || ''"></span>
+                                <span x-text="data[data.length - 1]?.time || ''"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- Disks -->
         @if($latestMetric->disks)
             <div class="bg-zinc-800 rounded-lg p-6 mb-8">
@@ -288,7 +425,7 @@
                     @if(isset($latestMetric->security['ssh_failed_24h']))
                         <div class="bg-zinc-900 rounded-lg p-4 group relative">
                             <div class="text-zinc-400 text-sm mb-1 flex items-center gap-1">
-                                SSH Failed (24h)
+                                SSH Attacks (24h)
                                 <svg class="w-3.5 h-3.5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
@@ -297,7 +434,7 @@
                                 {{ number_format($latestMetric->security['ssh_failed_24h']) }}
                             </div>
                             <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-zinc-700 text-xs text-zinc-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
-                                Failed SSH login attempts in the last 24 hours.<br>High numbers indicate brute-force attacks.
+                                SSH brute-force login attempts in the last 24 hours.<br>These are blocked by fail2ban after repeated failures.
                             </div>
                         </div>
                     @endif
@@ -420,7 +557,7 @@
                         }
                     @endphp
                     <div class="mt-6">
-                        <h4 class="text-sm text-zinc-400 mb-3">SSH Failed Attempts (last {{ $duration }})</h4>
+                        <h4 class="text-sm text-zinc-400 mb-3">SSH Attack Timeline (last {{ $duration }})</h4>
                         <div
                             x-data="{
                                 data: {{ json_encode($securityChartData) }},
@@ -547,6 +684,8 @@
             ">
                 Last update {{ $server->last_seen_at->diffForHumans() }}
             </span>
+            <span class="mx-2 text-zinc-500">•</span>
+            <span class="text-zinc-500">Dashboard v{{ trim(file_get_contents(base_path('VERSION'))) }}</span>
             @if($server->agent_version)
                 <span class="mx-2 text-zinc-500">•</span>
                 <span class="text-zinc-500">Agent v{{ $server->agent_version }}</span>
