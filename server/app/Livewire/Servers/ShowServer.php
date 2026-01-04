@@ -51,7 +51,7 @@ class ShowServer extends Component
                 $delta = $sshFailed - $prevSshFailed;
             }
             $securityChartData[] = [
-                'time' => $metric->recorded_at->format('H:i'),
+                'time' => $metric->recorded_at->format('H:i') . ' UTC',
                 'timestamp' => $metric->recorded_at->toIso8601String(),
                 'attacks' => $delta,
                 'total_24h' => $sshFailed,

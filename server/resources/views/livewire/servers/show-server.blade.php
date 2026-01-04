@@ -346,14 +346,14 @@
                             <div class="flex items-end gap-px h-24 bg-zinc-900 rounded-lg p-2">
                                 <template x-for="(point, index) in data" :key="index">
                                     <div
-                                        class="flex-1 relative group cursor-pointer"
+                                        class="flex-1 relative group cursor-pointer h-full flex items-end"
                                         @mouseenter="hoveredIndex = index"
                                         @mouseleave="hoveredIndex = null"
                                     >
                                         <div
                                             class="w-full rounded-t transition-all"
                                             :class="point.attacks > 10 ? 'bg-red-500' : point.attacks > 0 ? 'bg-amber-500' : 'bg-zinc-700'"
-                                            :style="'height: ' + (point.attacks > 0 ? Math.max(4, (point.attacks / maxAttacks) * 100) : 2) + '%'"
+                                            :style="'height: ' + (point.attacks > 0 ? Math.max(15, (point.attacks / maxAttacks) * 100) : 4) + '%'"
                                         ></div>
                                         <!-- Tooltip -->
                                         <div
