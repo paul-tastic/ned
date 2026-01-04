@@ -3,6 +3,7 @@
 namespace App\Livewire\Servers;
 
 use App\Models\Server;
+use App\Services\GeoIpService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -59,11 +60,19 @@ class ShowServer extends Component
             $prevSshFailed = $sshFailed;
         }
 
+        // Get geo data for banned IPs (server-side lookup)
+        $bannedIpGeo = [];
+        if ($latestMetric && !empty($latestMetric->security['banned_ips'])) {
+            $geoService = app(GeoIpService::class);
+            $bannedIpGeo = $geoService->lookupMany($latestMetric->security['banned_ips']);
+        }
+
         return view('livewire.servers.show-server', [
             'metrics' => $metrics,
             'latestMetric' => $latestMetric,
             'previousMetric' => $previousMetric,
             'securityChartData' => $securityChartData,
+            'bannedIpGeo' => $bannedIpGeo,
         ]);
     }
 }

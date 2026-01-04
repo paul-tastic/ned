@@ -318,6 +318,57 @@
                     @endif
                 </div>
 
+                <!-- fail2ban Settings -->
+                @if(isset($latestMetric->security['f2b_bantime']) && $latestMetric->security['f2b_bantime'] > 0)
+                    <div class="mt-4 p-3 bg-zinc-900 rounded-lg">
+                        <h4 class="text-xs text-zinc-500 mb-2 uppercase tracking-wide">fail2ban Settings</h4>
+                        <div class="flex flex-wrap gap-4 text-sm">
+                            <div>
+                                <span class="text-zinc-400">Ban time:</span>
+                                <span class="text-zinc-200 font-mono">{{ floor($latestMetric->security['f2b_bantime'] / 60) }} min</span>
+                            </div>
+                            <div>
+                                <span class="text-zinc-400">Max retry:</span>
+                                <span class="text-zinc-200 font-mono">{{ $latestMetric->security['f2b_maxretry'] ?? 'N/A' }}</span>
+                            </div>
+                            <div>
+                                <span class="text-zinc-400">Find time:</span>
+                                <span class="text-zinc-200 font-mono">{{ floor(($latestMetric->security['f2b_findtime'] ?? 0) / 60) }} min</span>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                <!-- Banned IPs -->
+                @if(!empty($latestMetric->security['banned_ips']))
+                    <div class="mt-4">
+                        <h4 class="text-sm text-zinc-400 mb-3">Currently Banned IPs</h4>
+                        <div class="space-y-2">
+                            @foreach($latestMetric->security['banned_ips'] as $bannedIp)
+                                @php
+                                    $geo = $bannedIpGeo[$bannedIp] ?? null;
+                                @endphp
+                                <div class="flex items-center justify-between bg-zinc-900 rounded-lg px-4 py-2">
+                                    <div class="flex items-center gap-3">
+                                        <code class="text-sm font-mono text-red-400">{{ $bannedIp }}</code>
+                                        @if($geo)
+                                            <span class="text-xs text-zinc-500">
+                                                {{ $geo['city'] ? $geo['city'] . ', ' : '' }}{{ $geo['country'] ?? 'Unknown' }}
+                                                @if($geo['isp'])
+                                                    <span class="text-zinc-600">· {{ $geo['isp'] }}</span>
+                                                @endif
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <span class="text-xs text-zinc-500">
+                                        banned for {{ floor(($latestMetric->security['f2b_bantime'] ?? 3600) / 60) }}m
+                                    </span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
                 <!-- SSH Attack Timeline -->
                 @if(count($securityChartData) > 1)
                     @php

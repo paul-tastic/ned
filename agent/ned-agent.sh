@@ -12,7 +12,7 @@
 set -e
 
 # Agent version
-NED_AGENT_VERSION="0.2.0"
+NED_AGENT_VERSION="0.3.0"
 
 # Load config
 CONFIG_FILE="${NED_CONFIG:-/etc/ned/config}"
@@ -334,6 +334,10 @@ get_security() {
     local f2b_banned=0
     local f2b_total=0
     local last_attack=""
+    local f2b_bantime=0
+    local f2b_maxretry=0
+    local f2b_findtime=0
+    local banned_ips=""
 
     # SSH failed attempts (last 24h) and last attack timestamp
     if command -v journalctl &> /dev/null; then
@@ -348,24 +352,53 @@ get_security() {
         last_attack=$(grep "Failed password\|Invalid user" /var/log/secure 2>/dev/null | tail -1 | awk '{print $1, $2, $3}' || echo "")
     fi
 
-    # fail2ban stats
+    # fail2ban stats and settings
     if command -v fail2ban-client &> /dev/null; then
         f2b_banned=$(fail2ban-client status sshd 2>/dev/null | grep "Currently banned" | awk '{print $NF}' || echo "0")
         f2b_total=$(fail2ban-client status sshd 2>/dev/null | grep "Total banned" | awk '{print $NF}' || echo "0")
+
+        # Get fail2ban settings
+        f2b_bantime=$(fail2ban-client get sshd bantime 2>/dev/null || echo "0")
+        f2b_maxretry=$(fail2ban-client get sshd maxretry 2>/dev/null || echo "0")
+        f2b_findtime=$(fail2ban-client get sshd findtime 2>/dev/null || echo "0")
+
+        # Get list of currently banned IPs
+        banned_ips=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP list:" | sed 's/.*Banned IP list:\s*//' | tr -s ' ' | sed 's/^ //')
     fi
 
     # Sanitize values
     ssh_failed="${ssh_failed:-0}"
     f2b_banned="${f2b_banned:-0}"
     f2b_total="${f2b_total:-0}"
+    f2b_bantime="${f2b_bantime:-0}"
+    f2b_maxretry="${f2b_maxretry:-0}"
+    f2b_findtime="${f2b_findtime:-0}"
 
-    # Build JSON with optional last_attack field
+    # Build banned IPs JSON array
+    local banned_ips_json="[]"
+    if [ -n "$banned_ips" ]; then
+        banned_ips_json="["
+        local first=true
+        for ip in $banned_ips; do
+            if [ "$first" = true ]; then
+                first=false
+            else
+                banned_ips_json+=","
+            fi
+            banned_ips_json+="\"$ip\""
+        done
+        banned_ips_json+="]"
+    fi
+
+    # Build JSON with all security data
     if [ -n "$last_attack" ]; then
-        printf '{"ssh_failed_24h": %d, "f2b_currently_banned": %d, "f2b_total_banned": %d, "last_attack": "%s"}' \
-            "${ssh_failed//[^0-9]/}" "${f2b_banned//[^0-9]/}" "${f2b_total//[^0-9]/}" "$last_attack"
+        printf '{"ssh_failed_24h": %d, "f2b_currently_banned": %d, "f2b_total_banned": %d, "last_attack": "%s", "f2b_bantime": %d, "f2b_maxretry": %d, "f2b_findtime": %d, "banned_ips": %s}' \
+            "${ssh_failed//[^0-9]/}" "${f2b_banned//[^0-9]/}" "${f2b_total//[^0-9]/}" "$last_attack" \
+            "${f2b_bantime//[^0-9]/}" "${f2b_maxretry//[^0-9]/}" "${f2b_findtime//[^0-9]/}" "$banned_ips_json"
     else
-        printf '{"ssh_failed_24h": %d, "f2b_currently_banned": %d, "f2b_total_banned": %d, "last_attack": null}' \
-            "${ssh_failed//[^0-9]/}" "${f2b_banned//[^0-9]/}" "${f2b_total//[^0-9]/}"
+        printf '{"ssh_failed_24h": %d, "f2b_currently_banned": %d, "f2b_total_banned": %d, "last_attack": null, "f2b_bantime": %d, "f2b_maxretry": %d, "f2b_findtime": %d, "banned_ips": %s}' \
+            "${ssh_failed//[^0-9]/}" "${f2b_banned//[^0-9]/}" "${f2b_total//[^0-9]/}" \
+            "${f2b_bantime//[^0-9]/}" "${f2b_maxretry//[^0-9]/}" "${f2b_findtime//[^0-9]/}" "$banned_ips_json"
     fi
 }
 
