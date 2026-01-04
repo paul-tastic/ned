@@ -60,6 +60,38 @@ class ShowServer extends Component
             $prevSshFailed = $sshFailed;
         }
 
+        // Build network chart data (bytes transferred per interval)
+        $networkChartData = [];
+        $prevNetwork = null;
+        $prevRecordedAt = null;
+        foreach ($metrics as $metric) {
+            $network = $metric->network[0] ?? null; // Primary interface (eth0)
+            $rxBytes = 0;
+            $txBytes = 0;
+
+            if ($prevNetwork && $network && $prevRecordedAt) {
+                $seconds = $metric->recorded_at->diffInSeconds($prevRecordedAt);
+                if ($seconds > 0) {
+                    $rxDelta = $network['rx_bytes'] - $prevNetwork['rx_bytes'];
+                    $txDelta = $network['tx_bytes'] - $prevNetwork['tx_bytes'];
+                    // Only use if positive (ignore counter resets)
+                    if ($rxDelta >= 0 && $txDelta >= 0) {
+                        $rxBytes = $rxDelta;
+                        $txBytes = $txDelta;
+                    }
+                }
+            }
+
+            $networkChartData[] = [
+                'time' => $metric->recorded_at->format('H:i') . ' UTC',
+                'rx' => $rxBytes,
+                'tx' => $txBytes,
+            ];
+
+            $prevNetwork = $network;
+            $prevRecordedAt = $metric->recorded_at;
+        }
+
         // Get geo data for banned IPs (server-side lookup)
         $bannedIpGeo = [];
         if ($latestMetric && !empty($latestMetric->security['banned_ips'])) {
@@ -76,6 +108,7 @@ class ShowServer extends Component
             'latestMetric' => $latestMetric,
             'previousMetric' => $previousMetric,
             'securityChartData' => $securityChartData,
+            'networkChartData' => $networkChartData,
             'bannedIpGeo' => $bannedIpGeo,
         ]);
     }

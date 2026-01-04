@@ -184,83 +184,98 @@
 
         <!-- Network I/O -->
         @if($latestMetric->network && count($latestMetric->network) > 0)
+            @php
+                $iface = $latestMetric->network[0];
+                $formatBytes = function($bytes) {
+                    if ($bytes >= 1099511627776) return number_format($bytes / 1099511627776, 2) . ' TB';
+                    if ($bytes >= 1073741824) return number_format($bytes / 1073741824, 2) . ' GB';
+                    if ($bytes >= 1048576) return number_format($bytes / 1048576, 1) . ' MB';
+                    if ($bytes >= 1024) return number_format($bytes / 1024, 0) . ' KB';
+                    return $bytes . ' B';
+                };
+                $totalRx = collect($networkChartData)->sum('rx');
+                $totalTx = collect($networkChartData)->sum('tx');
+            @endphp
             <div class="bg-zinc-800 rounded-lg p-6 mb-8">
-                <h3 class="font-semibold mb-4">Network I/O</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    @foreach($latestMetric->network as $iface)
-                        @php
-                            // Find previous metric data for this interface
-                            $prevIface = null;
-                            $rxRate = null;
-                            $txRate = null;
-                            if ($previousMetric && $previousMetric->network) {
-                                foreach ($previousMetric->network as $prev) {
-                                    if ($prev['interface'] === $iface['interface']) {
-                                        $prevIface = $prev;
-                                        break;
-                                    }
-                                }
-                            }
+                <h3 class="font-semibold mb-4">Network I/O <span class="text-zinc-500 font-normal text-sm font-mono">({{ $iface['interface'] }})</span></h3>
 
-                            // Calculate rate if we have previous data
-                            if ($prevIface && $latestMetric->recorded_at && $previousMetric->recorded_at) {
-                                $seconds = $latestMetric->recorded_at->diffInSeconds($previousMetric->recorded_at);
-                                if ($seconds > 0) {
-                                    $rxDelta = $iface['rx_bytes'] - $prevIface['rx_bytes'];
-                                    $txDelta = $iface['tx_bytes'] - $prevIface['tx_bytes'];
-                                    // Handle counter reset (reboot)
-                                    if ($rxDelta >= 0 && $txDelta >= 0) {
-                                        $rxRate = $rxDelta / $seconds;
-                                        $txRate = $txDelta / $seconds;
-                                    }
-                                }
-                            }
-
-                            // Format helper
-                            $formatBytes = function($bytes) {
-                                if ($bytes >= 1099511627776) return number_format($bytes / 1099511627776, 2) . ' TB';
-                                if ($bytes >= 1073741824) return number_format($bytes / 1073741824, 2) . ' GB';
-                                if ($bytes >= 1048576) return number_format($bytes / 1048576, 1) . ' MB';
-                                if ($bytes >= 1024) return number_format($bytes / 1024, 0) . ' KB';
-                                return $bytes . ' B';
-                            };
-
-                            $formatRate = function($bytesPerSec) {
-                                if ($bytesPerSec >= 1073741824) return number_format($bytesPerSec / 1073741824, 2) . ' GB/s';
-                                if ($bytesPerSec >= 1048576) return number_format($bytesPerSec / 1048576, 1) . ' MB/s';
-                                if ($bytesPerSec >= 1024) return number_format($bytesPerSec / 1024, 0) . ' KB/s';
-                                return number_format($bytesPerSec, 0) . ' B/s';
-                            };
-                        @endphp
-                        <div class="bg-zinc-900 rounded-lg p-4">
-                            <div class="text-zinc-400 text-sm mb-2 font-mono">{{ $iface['interface'] }}</div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <div class="text-zinc-500 text-xs mb-1">↓ Download</div>
-                                    @if($rxRate !== null)
-                                        <div class="text-lg font-bold text-emerald-400">{{ $formatRate($rxRate) }}</div>
-                                        <div class="text-zinc-500 text-xs">{{ $formatBytes($iface['rx_bytes']) }} total</div>
-                                    @else
-                                        <div class="text-lg font-bold text-emerald-400">{{ $formatBytes($iface['rx_bytes']) }}</div>
-                                        <div class="text-zinc-500 text-xs">total since boot</div>
-                                    @endif
-                                </div>
-                                <div>
-                                    <div class="text-zinc-500 text-xs mb-1">↑ Upload</div>
-                                    @if($txRate !== null)
-                                        <div class="text-lg font-bold text-blue-400">{{ $formatRate($txRate) }}</div>
-                                        <div class="text-zinc-500 text-xs">{{ $formatBytes($iface['tx_bytes']) }} total</div>
-                                    @else
-                                        <div class="text-lg font-bold text-blue-400">{{ $formatBytes($iface['tx_bytes']) }}</div>
-                                        <div class="text-zinc-500 text-xs">total since boot</div>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
+                <!-- Summary stats -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-zinc-900 rounded-lg p-3">
+                        <div class="text-zinc-500 text-xs mb-1">↓ Downloaded (24h)</div>
+                        <div class="text-lg font-bold text-emerald-400">{{ $formatBytes($totalRx) }}</div>
+                    </div>
+                    <div class="bg-zinc-900 rounded-lg p-3">
+                        <div class="text-zinc-500 text-xs mb-1">↑ Uploaded (24h)</div>
+                        <div class="text-lg font-bold text-blue-400">{{ $formatBytes($totalTx) }}</div>
+                    </div>
+                    <div class="bg-zinc-900 rounded-lg p-3">
+                        <div class="text-zinc-500 text-xs mb-1">↓ Total since boot</div>
+                        <div class="text-lg font-bold text-emerald-400">{{ $formatBytes($iface['rx_bytes']) }}</div>
+                    </div>
+                    <div class="bg-zinc-900 rounded-lg p-3">
+                        <div class="text-zinc-500 text-xs mb-1">↑ Total since boot</div>
+                        <div class="text-lg font-bold text-blue-400">{{ $formatBytes($iface['tx_bytes']) }}</div>
+                    </div>
                 </div>
-                @if($rxRate !== null)
-                    <div class="text-zinc-500 text-xs mt-3">Rate calculated from last {{ $latestMetric->recorded_at->diffInSeconds($previousMetric->recorded_at) }}s interval</div>
+
+                <!-- Network Traffic Chart -->
+                @if(count($networkChartData) > 1)
+                    <div
+                        x-data="{
+                            data: {{ json_encode($networkChartData) }},
+                            hoveredIndex: null,
+                            formatBytes(bytes) {
+                                if (bytes >= 1073741824) return (bytes / 1073741824).toFixed(2) + ' GB';
+                                if (bytes >= 1048576) return (bytes / 1048576).toFixed(1) + ' MB';
+                                if (bytes >= 1024) return Math.round(bytes / 1024) + ' KB';
+                                return bytes + ' B';
+                            },
+                            get maxBytes() {
+                                return Math.max(1, ...this.data.map(d => Math.max(d.rx, d.tx)));
+                            }
+                        }"
+                        class="relative"
+                    >
+                        <div class="flex items-end gap-px h-32 bg-zinc-900 rounded-lg p-2">
+                            <template x-for="(point, index) in data" :key="index">
+                                <div
+                                    class="flex-1 relative group cursor-pointer h-full flex flex-col justify-end gap-px"
+                                    @mouseenter="hoveredIndex = index"
+                                    @mouseleave="hoveredIndex = null"
+                                >
+                                    <!-- RX bar (download - green) -->
+                                    <div
+                                        class="w-full bg-emerald-500/70 rounded-t transition-all"
+                                        :style="'height: ' + (point.rx > 0 ? Math.max(2, (point.rx / maxBytes) * 50) : 1) + '%'"
+                                    ></div>
+                                    <!-- TX bar (upload - blue) -->
+                                    <div
+                                        class="w-full bg-blue-500/70 rounded-t transition-all"
+                                        :style="'height: ' + (point.tx > 0 ? Math.max(2, (point.tx / maxBytes) * 50) : 1) + '%'"
+                                    ></div>
+                                    <!-- Tooltip -->
+                                    <div
+                                        x-show="hoveredIndex === index"
+                                        x-transition
+                                        class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-700 text-xs text-zinc-200 rounded whitespace-nowrap z-10"
+                                    >
+                                        <span x-text="point.time"></span><br>
+                                        <span class="text-emerald-400">↓</span> <span x-text="formatBytes(point.rx)"></span>
+                                        <span class="text-blue-400 ml-2">↑</span> <span x-text="formatBytes(point.tx)"></span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="flex justify-between text-xs text-zinc-500 mt-1 px-2">
+                            <span x-text="data[0]?.time || ''"></span>
+                            <div class="flex gap-4">
+                                <span><span class="inline-block w-2 h-2 bg-emerald-500/70 rounded mr-1"></span>Download</span>
+                                <span><span class="inline-block w-2 h-2 bg-blue-500/70 rounded mr-1"></span>Upload</span>
+                            </div>
+                            <span x-text="data[data.length - 1]?.time || ''"></span>
+                        </div>
+                    </div>
                 @endif
             </div>
         @endif
