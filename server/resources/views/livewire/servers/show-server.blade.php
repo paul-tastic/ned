@@ -421,7 +421,7 @@
         @if($latestMetric->security)
             <div class="bg-zinc-800 rounded-lg p-6 mb-8">
                 <h3 class="font-semibold mb-4">Security</h3>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     @if(isset($latestMetric->security['ssh_failed_24h']))
                         <div class="bg-zinc-900 rounded-lg p-4 group relative">
                             <div class="text-zinc-400 text-sm mb-1 flex items-center gap-1">
