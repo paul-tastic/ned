@@ -457,14 +457,16 @@
                     @if(isset($latestMetric->security['last_attack']) && $latestMetric->security['last_attack'])
                         @php
                             $lastAttackRaw = $latestMetric->security['last_attack'];
-                            // Parse syslog format (e.g., "Jan  5 00:15:32") - add current year
-                            $lastAttackTime = \Carbon\Carbon::parse($lastAttackRaw . ' ' . now()->year);
+                            // Parse syslog format (e.g., "Jan  5 00:15:32") - assume UTC, add current year
+                            $lastAttackTime = \Carbon\Carbon::parse($lastAttackRaw . ' ' . now()->year, 'UTC');
                             // If parsed date is in the future, it was from last year
                             if ($lastAttackTime->isFuture()) {
                                 $lastAttackTime = $lastAttackTime->subYear();
                             }
-                            $today = now()->startOfDay();
-                            $yesterday = now()->subDay()->startOfDay();
+                            // Convert to Central Time
+                            $lastAttackTime = $lastAttackTime->setTimezone('America/Chicago');
+                            $today = now('America/Chicago')->startOfDay();
+                            $yesterday = now('America/Chicago')->subDay()->startOfDay();
                             if ($lastAttackTime->gte($today)) {
                                 $lastAttackDisplay = 'Today, ' . $lastAttackTime->format('H:i');
                             } elseif ($lastAttackTime->gte($yesterday)) {
@@ -475,7 +477,7 @@
                         @endphp
                         <div class="bg-zinc-900 rounded-lg p-4 group relative">
                             <div class="text-zinc-400 text-sm mb-1 flex items-center gap-1">
-                                Last Attack
+                                Last Attack <span class="text-zinc-500 text-xs">(CT)</span>
                                 <svg class="w-3.5 h-3.5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
