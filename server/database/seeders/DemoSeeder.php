@@ -139,10 +139,7 @@ class DemoSeeder extends Seeder
                     ['name' => 'php-fpm', 'status' => 'running'],
                     ['name' => 'redis', 'status' => 'running'],
                 ],
-                'security' => [
-                    'fail2ban' => ['status' => 'active', 'banned_ips' => rand(2, 8)],
-                    'ufw' => ['status' => 'active'],
-                ],
+                'security' => $this->generateSecurityData(rand(50, 150), rand(2, 5)),
             ]);
         }
     }
@@ -178,10 +175,7 @@ class DemoSeeder extends Seeder
                     ['name' => 'mysql', 'status' => 'running'],
                     ['name' => 'supervisor', 'status' => 'running'],
                 ],
-                'security' => [
-                    'fail2ban' => ['status' => 'active', 'banned_ips' => rand(5, 15)],
-                    'ufw' => ['status' => 'active'],
-                ],
+                'security' => $this->generateSecurityData(rand(200, 500), rand(5, 12)),
             ]);
         }
     }

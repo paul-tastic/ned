@@ -454,6 +454,38 @@
                             </div>
                         </div>
                     @endif
+                    @if(isset($latestMetric->security['last_attack']) && $latestMetric->security['last_attack'])
+                        @php
+                            $lastAttackRaw = $latestMetric->security['last_attack'];
+                            // Parse syslog format (e.g., "Jan  5 00:15:32") - add current year
+                            $lastAttackTime = \Carbon\Carbon::parse($lastAttackRaw . ' ' . now()->year);
+                            // If parsed date is in the future, it was from last year
+                            if ($lastAttackTime->isFuture()) {
+                                $lastAttackTime = $lastAttackTime->subYear();
+                            }
+                            $today = now()->startOfDay();
+                            $yesterday = now()->subDay()->startOfDay();
+                            if ($lastAttackTime->gte($today)) {
+                                $lastAttackDisplay = 'Today, ' . $lastAttackTime->format('H:i');
+                            } elseif ($lastAttackTime->gte($yesterday)) {
+                                $lastAttackDisplay = 'Yesterday, ' . $lastAttackTime->format('H:i');
+                            } else {
+                                $lastAttackDisplay = $lastAttackTime->format('M j, H:i');
+                            }
+                        @endphp
+                        <div class="bg-zinc-900 rounded-lg p-4 group relative">
+                            <div class="text-zinc-400 text-sm mb-1 flex items-center gap-1">
+                                Last Attack
+                                <svg class="w-3.5 h-3.5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="text-xl font-bold font-mono">{{ $lastAttackDisplay }}</div>
+                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-zinc-700 text-xs text-zinc-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                                Most recent SSH brute-force attempt detected.
+                            </div>
+                        </div>
+                    @endif
                     <div class="bg-zinc-900 rounded-lg p-4 group relative">
                         <div class="text-zinc-400 text-sm mb-1 flex items-center gap-1">
                             Banned (7d)
