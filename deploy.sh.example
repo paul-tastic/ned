@@ -3,12 +3,16 @@
 # Deploy Ned server to production
 # Usage: ./deploy.sh
 #
+# Copy this file to deploy.sh and fill in your server details:
+#   cp deploy.sh.example deploy.sh
+#   chmod +x deploy.sh
+#
 
 set -e
 
-REMOTE_USER="paul"
-REMOTE_HOST="193.43.134.164"
-REMOTE_PATH="/home/app.getneddy.com"
+REMOTE_USER="your-username"
+REMOTE_HOST="your-server-ip"
+REMOTE_PATH="/path/to/your/app"
 LOCAL_PATH="$(dirname "$0")/server"
 
 echo "🚀 Deploying Ned to $REMOTE_HOST..."
@@ -38,7 +42,7 @@ echo "📦 Files synced to temp location"
 ssh "$REMOTE_USER@$REMOTE_HOST" << 'ENDSSH'
 set -e
 
-REMOTE_PATH="/home/app.getneddy.com"
+REMOTE_PATH="/path/to/your/app"
 
 # Copy files with correct ownership (exclude public_html symlink)
 sudo rsync -a --delete \
@@ -53,19 +57,19 @@ sudo rsync -a --delete \
 # Ensure public_html symlink exists (CyberPanel uses this as docroot)
 if [ ! -L "$REMOTE_PATH/public_html" ]; then
     sudo ln -sf "$REMOTE_PATH/public" "$REMOTE_PATH/public_html"
-    sudo chown -h appge4880:appge4880 "$REMOTE_PATH/public_html"
+    sudo chown -h your-web-user:your-web-user "$REMOTE_PATH/public_html"
 fi
 
-# Fix ownership
-sudo chown -R appge4880:appge4880 "$REMOTE_PATH/"
+# Fix ownership (replace with your web user)
+sudo chown -R your-web-user:your-web-user "$REMOTE_PATH/"
 
 # Clear caches
-sudo -u appge4880 php "$REMOTE_PATH/artisan" view:clear
-sudo -u appge4880 php "$REMOTE_PATH/artisan" config:clear
-sudo -u appge4880 php "$REMOTE_PATH/artisan" route:clear
+sudo -u your-web-user php "$REMOTE_PATH/artisan" view:clear
+sudo -u your-web-user php "$REMOTE_PATH/artisan" config:clear
+sudo -u your-web-user php "$REMOTE_PATH/artisan" route:clear
 
 # Run migrations if needed
-sudo -u appge4880 php "$REMOTE_PATH/artisan" migrate --force
+sudo -u your-web-user php "$REMOTE_PATH/artisan" migrate --force
 
 echo "✅ Deployment complete!"
 ENDSSH
