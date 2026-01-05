@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screenshots - Ned Server Monitoring</title>
+    <meta name="description" content="See Ned in action - dashboard views, server metrics, alerts, and more.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖥️</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap');
+        .font-mono { font-family: 'IBM Plex Mono', monospace; }
+        .font-sans { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-100 font-sans">
+    <nav class="p-6 flex justify-between items-center max-w-6xl mx-auto w-full">
+        <a href="/" class="flex items-center gap-2">
+            <span class="text-2xl">🖥️</span>
+            <span class="font-mono font-semibold text-xl">ned</span>
+        </a>
+        <div class="flex items-center gap-6">
+            <a href="/" class="text-gray-400 hover:text-white transition-colors">Home</a>
+            <a href="https://github.com/paul-tastic/ned" class="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                GitHub
+            </a>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-6 py-12">
+        <h1 class="text-4xl font-bold mb-4">Screenshots</h1>
+        <p class="text-gray-400 mb-12 text-lg">See what Ned looks like in action. All screenshots show demo data.</p>
+
+        <div class="space-y-16">
+            <!-- Dashboard Overview -->
+            <section>
+                <h2 class="text-2xl font-semibold mb-2">Dashboard Overview</h2>
+                <p class="text-gray-400 mb-4">See all your servers at a glance with status indicators and key metrics.</p>
+                <a href="screenshots/screenshot-1.png" target="_blank" class="block">
+                    <img src="screenshots/screenshot-1.png" alt="Ned Dashboard Overview" class="rounded-xl border border-gray-800 shadow-2xl hover:border-gray-700 transition-colors">
+                </a>
+            </section>
+
+            <!-- Server Detail -->
+            <section>
+                <h2 class="text-2xl font-semibold mb-2">Server Detail View</h2>
+                <p class="text-gray-400 mb-4">Dive into individual server metrics with resource history charts, disk usage, and service status.</p>
+                <a href="screenshots/screenshot-2.png" target="_blank" class="block">
+                    <img src="screenshots/screenshot-2.png" alt="Server Detail View" class="rounded-xl border border-gray-800 shadow-2xl hover:border-gray-700 transition-colors">
+                </a>
+            </section>
+
+            <!-- Network & Security -->
+            <section>
+                <h2 class="text-2xl font-semibold mb-2">Network & Security Monitoring</h2>
+                <p class="text-gray-400 mb-4">Track network I/O, banned IPs from fail2ban, and security events.</p>
+                <a href="screenshots/screenshot-3.png" target="_blank" class="block">
+                    <img src="screenshots/screenshot-3.png" alt="Network and Security Monitoring" class="rounded-xl border border-gray-800 shadow-2xl hover:border-gray-700 transition-colors">
+                </a>
+            </section>
+
+            <!-- Critical Alerts -->
+            <section>
+                <h2 class="text-2xl font-semibold mb-2">Critical Alerts</h2>
+                <p class="text-gray-400 mb-4">When things go wrong, Ned makes it obvious. Red alerts, clear messaging, actionable info.</p>
+                <a href="screenshots/screenshot-4.png" target="_blank" class="block">
+                    <img src="screenshots/screenshot-4.png" alt="Critical Server Alerts" class="rounded-xl border border-gray-800 shadow-2xl hover:border-gray-700 transition-colors">
+                </a>
+            </section>
+
+            <!-- Agent Updates -->
+            <section>
+                <h2 class="text-2xl font-semibold mb-2">Agent Update Notifications</h2>
+                <p class="text-gray-400 mb-4">Ned tells you when agents need updating, with one-liner install commands.</p>
+                <a href="screenshots/screenshot-5.png" target="_blank" class="block">
+                    <img src="screenshots/screenshot-5.png" alt="Agent Update Notification" class="rounded-xl border border-gray-800 shadow-2xl hover:border-gray-700 transition-colors">
+                </a>
+            </section>
+        </div>
+
+        <div class="mt-16 text-center">
+            <a href="https://github.com/paul-tastic/ned#quick-start" class="inline-block px-8 py-3 bg-emerald-600 hover:bg-emerald-500 rounded-lg font-semibold transition-colors">
+                Get Started
+            </a>
+        </div>
+    </main>
+
+    <footer class="py-8 px-6 border-t border-gray-800 mt-16">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-gray-500 text-sm">
+            <div class="flex items-center gap-2">
+                <span>🖥️</span>
+                <span class="font-mono">ned</span>
+                <span>•</span>
+                <span>MIT License</span>
+            </div>
+            <div class="flex gap-6">
+                <a href="https://github.com/paul-tastic/ned" class="hover:text-white transition-colors">GitHub</a>
+                <a href="https://github.com/paul-tastic/ned/blob/master/DEPLOYMENT.md" class="hover:text-white transition-colors">Docs</a>
+                <a href="https://github.com/paul-tastic/ned/blob/master/SECURITY.md" class="hover:text-white transition-colors">Security</a>
+                <a href="https://github.com/paul-tastic/ned/blob/master/CONTRIBUTING.md" class="hover:text-white transition-colors">Contribute</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
