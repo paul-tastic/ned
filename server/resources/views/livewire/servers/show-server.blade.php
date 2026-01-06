@@ -339,14 +339,14 @@
                 <!-- Summary stats -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <div class="bg-zinc-900 rounded-lg p-3">
-                        <div class="text-zinc-500 text-xs mb-1">↓ Downloaded (24h)</div>
+                        <div class="text-zinc-500 text-xs mb-1">↓ Inbound (24h)</div>
                         <div class="text-lg font-bold text-emerald-400">{{ $formatBytes($totalRx) }}</div>
                         @if($avgDailyRx > 0)
                             <div class="text-zinc-500 text-xs mt-1">avg: {{ $formatBytes($avgDailyRx) }}/day</div>
                         @endif
                     </div>
                     <div class="bg-zinc-900 rounded-lg p-3">
-                        <div class="text-zinc-500 text-xs mb-1">↑ Uploaded (24h)</div>
+                        <div class="text-zinc-500 text-xs mb-1">↑ Outbound (24h)</div>
                         <div class="text-lg font-bold text-blue-400">{{ $formatBytes($totalTx) }}</div>
                         @if($avgDailyTx > 0)
                             <div class="text-zinc-500 text-xs mt-1">avg: {{ $formatBytes($avgDailyTx) }}/day</div>
@@ -413,8 +413,8 @@
                         <div class="flex justify-between text-xs text-zinc-500 mt-1 px-2">
                             <span x-text="data[0]?.time || ''"></span>
                             <div class="flex gap-4">
-                                <span><span class="inline-block w-2 h-2 bg-emerald-500/70 rounded mr-1"></span>Download</span>
-                                <span><span class="inline-block w-2 h-2 bg-blue-500/70 rounded mr-1"></span>Upload</span>
+                                <span><span class="inline-block w-2 h-2 bg-emerald-500/70 rounded mr-1"></span>Inbound</span>
+                                <span><span class="inline-block w-2 h-2 bg-blue-500/70 rounded mr-1"></span>Outbound</span>
                             </div>
                             <span x-text="data[data.length - 1]?.time || ''"></span>
                         </div>
