@@ -664,6 +664,103 @@ class ShowServerTest extends TestCase
         $this->assertEmpty($component->viewData('diskChartData'));
     }
 
+    public function test_avg_daily_network_calculated_from_week_data(): void
+    {
+        $this->actingAs($this->user);
+
+        // Create metrics over 3 days
+        // Day 1: 1GB RX, 500MB TX
+        Metric::create([
+            'server_id' => $this->server->id,
+            'recorded_at' => now()->subDays(2)->subHours(2),
+            'network' => [['interface' => 'eth0', 'rx_bytes' => 0, 'tx_bytes' => 0]],
+        ]);
+        Metric::create([
+            'server_id' => $this->server->id,
+            'recorded_at' => now()->subDays(2),
+            'network' => [['interface' => 'eth0', 'rx_bytes' => 1073741824, 'tx_bytes' => 536870912]], // 1GB / 512MB
+        ]);
+
+        // Day 2: 2GB RX, 1GB TX
+        Metric::create([
+            'server_id' => $this->server->id,
+            'recorded_at' => now()->subDays(1)->subHours(2),
+            'network' => [['interface' => 'eth0', 'rx_bytes' => 1073741824, 'tx_bytes' => 536870912]],
+        ]);
+        Metric::create([
+            'server_id' => $this->server->id,
+            'recorded_at' => now()->subDays(1),
+            'network' => [['interface' => 'eth0', 'rx_bytes' => 3221225472, 'tx_bytes' => 1610612736]], // +2GB / +1GB
+        ]);
+
+        // Day 3 (today): 500MB RX, 250MB TX
+        Metric::create([
+            'server_id' => $this->server->id,
+            'recorded_at' => now()->subHours(2),
+            'network' => [['interface' => 'eth0', 'rx_bytes' => 3221225472, 'tx_bytes' => 1610612736]],
+        ]);
+        Metric::create([
+            'server_id' => $this->server->id,
+            'recorded_at' => now(),
+            'network' => [['interface' => 'eth0', 'rx_bytes' => 3758096384, 'tx_bytes' => 1879048192]], // +512MB / +256MB
+        ]);
+
+        $component = Livewire::test(ShowServer::class, ['server' => $this->server]);
+
+        $avgDailyRx = $component->viewData('avgDailyRx');
+        $avgDailyTx = $component->viewData('avgDailyTx');
+
+        // Day 1: 1GB, Day 2: 2GB, Day 3: 0.5GB = 3.5GB / 3 days ≈ 1.17GB
+        // Using bytes: (1073741824 + 2147483648 + 536870912) / 3 = 1252698794.67
+        $this->assertGreaterThan(0, $avgDailyRx);
+        $this->assertGreaterThan(0, $avgDailyTx);
+    }
+
+    public function test_avg_daily_network_zero_with_no_data(): void
+    {
+        $this->actingAs($this->user);
+
+        $component = Livewire::test(ShowServer::class, ['server' => $this->server]);
+
+        $this->assertEquals(0, $component->viewData('avgDailyRx'));
+        $this->assertEquals(0, $component->viewData('avgDailyTx'));
+    }
+
+    public function test_avg_daily_network_ignores_counter_reset(): void
+    {
+        $this->actingAs($this->user);
+
+        // First metric with high values
+        Metric::create([
+            'server_id' => $this->server->id,
+            'recorded_at' => now()->subHours(4),
+            'network' => [['interface' => 'eth0', 'rx_bytes' => 5000000000, 'tx_bytes' => 2000000000]],
+        ]);
+
+        // Counter reset (server reboot) - lower values
+        Metric::create([
+            'server_id' => $this->server->id,
+            'recorded_at' => now()->subHours(2),
+            'network' => [['interface' => 'eth0', 'rx_bytes' => 100000, 'tx_bytes' => 50000]],
+        ]);
+
+        // Normal increment after reset
+        Metric::create([
+            'server_id' => $this->server->id,
+            'recorded_at' => now(),
+            'network' => [['interface' => 'eth0', 'rx_bytes' => 500000, 'tx_bytes' => 200000]],
+        ]);
+
+        $component = Livewire::test(ShowServer::class, ['server' => $this->server]);
+
+        $avgDailyRx = $component->viewData('avgDailyRx');
+        $avgDailyTx = $component->viewData('avgDailyTx');
+
+        // Should only count the delta after reset (400000 rx, 150000 tx), not the negative delta
+        $this->assertEquals(400000, $avgDailyRx);
+        $this->assertEquals(150000, $avgDailyTx);
+    }
+
     private function createServer(array $attributes = []): Server
     {
         $token = Server::generateToken();
