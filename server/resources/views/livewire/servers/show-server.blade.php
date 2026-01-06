@@ -341,10 +341,16 @@
                     <div class="bg-zinc-900 rounded-lg p-3">
                         <div class="text-zinc-500 text-xs mb-1">↓ Downloaded (24h)</div>
                         <div class="text-lg font-bold text-emerald-400">{{ $formatBytes($totalRx) }}</div>
+                        @if($avgDailyRx > 0)
+                            <div class="text-zinc-500 text-xs mt-1">avg: {{ $formatBytes($avgDailyRx) }}/day</div>
+                        @endif
                     </div>
                     <div class="bg-zinc-900 rounded-lg p-3">
                         <div class="text-zinc-500 text-xs mb-1">↑ Uploaded (24h)</div>
                         <div class="text-lg font-bold text-blue-400">{{ $formatBytes($totalTx) }}</div>
+                        @if($avgDailyTx > 0)
+                            <div class="text-zinc-500 text-xs mt-1">avg: {{ $formatBytes($avgDailyTx) }}/day</div>
+                        @endif
                     </div>
                     <div class="bg-zinc-900 rounded-lg p-3">
                         <div class="text-zinc-500 text-xs mb-1">↓ Total since boot</div>

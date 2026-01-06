@@ -165,6 +165,36 @@ class ShowServer extends Component
             ->distinct('ip_address')
             ->count('ip_address');
 
+        // Calculate average daily network I/O from last 7 days
+        $weekMetrics = $this->server->metrics()
+            ->where('recorded_at', '>=', now()->subDays(7))
+            ->orderBy('recorded_at')
+            ->get(['network', 'recorded_at']);
+
+        $dailyRxTotals = [];
+        $dailyTxTotals = [];
+        $prevNetwork = null;
+
+        foreach ($weekMetrics as $metric) {
+            $network = $metric->network[0] ?? null;
+            $day = $metric->recorded_at->format('Y-m-d');
+
+            if ($prevNetwork !== null && $network !== null) {
+                $rxDelta = ($network['rx_bytes'] ?? 0) - ($prevNetwork['rx_bytes'] ?? 0);
+                $txDelta = ($network['tx_bytes'] ?? 0) - ($prevNetwork['tx_bytes'] ?? 0);
+                // Only use if positive (ignore counter resets)
+                if ($rxDelta >= 0 && $txDelta >= 0) {
+                    $dailyRxTotals[$day] = ($dailyRxTotals[$day] ?? 0) + $rxDelta;
+                    $dailyTxTotals[$day] = ($dailyTxTotals[$day] ?? 0) + $txDelta;
+                }
+            }
+            $prevNetwork = $network;
+        }
+
+        $daysWithData = count($dailyRxTotals);
+        $avgDailyRx = $daysWithData > 0 ? array_sum($dailyRxTotals) / $daysWithData : 0;
+        $avgDailyTx = $daysWithData > 0 ? array_sum($dailyTxTotals) / $daysWithData : 0;
+
         return view('livewire.servers.show-server', [
             'metrics' => $metrics,
             'latestMetric' => $latestMetric,
@@ -177,6 +207,8 @@ class ShowServer extends Component
             'bannedIpGeo' => $bannedIpGeo,
             'bannedIpCounts' => $bannedIpCounts,
             'totalBanned7d' => $totalBanned7d,
+            'avgDailyRx' => $avgDailyRx,
+            'avgDailyTx' => $avgDailyTx,
         ]);
     }
 }
