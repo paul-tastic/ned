@@ -8,5 +8,6 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Prune old banned IP events daily (1 year retention)
+// Prune old data daily (1 year retention)
 Schedule::command('ned:prune-banned-ips')->daily();
+Schedule::command('ned:prune-metrics')->daily();
