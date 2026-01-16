@@ -227,6 +227,32 @@ The agent automatically detects:
 | Disk Used | 80% | 90% |
 | Service Down | - | Immediate |
 
+### Example: Media Server Deployment
+
+For media servers running Plex/*arr stack, ned auto-detects all services:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Media Server (ned agent)                               │
+├─────────────────────────────────────────────────────────┤
+│  Systemd Services                                       │
+│    • ripforge.service  - Disc ripping web UI            │
+│                                                         │
+│  Docker Containers (auto-detected)                      │
+│    • plex             - Media server                    │
+│    • radarr           - Movie management                │
+│    • sonarr           - TV show management              │
+│    • prowlarr         - Indexer manager                 │
+│    • overseerr        - Request management              │
+│    • qbittorrent      - Download client                 │
+│    • tautulli         - Plex statistics                 │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Recommended thresholds for media servers:**
+- **Disk**: Warning 85%, Critical 95% (media libraries grow)
+- **CPU**: Warning 90%, Critical 98% (transcoding spikes are normal)
+
 ## API Endpoints
 
 ### Public
