@@ -2,7 +2,7 @@
 
 > "Excuse me, I believe you have my... server metrics."
 
-Meet ned - the basement-dwelling, bespectacled server watcher who keeps an eye on your infrastructure so you don't have to. Self-hosted monitoring for indie developers.
+Meet ned - the basement-dwelling, bespectacled server watcher who keeps an eye on your infrastructure so you don't have to. Self-hosted monitoring for indie developers (alternative to Netdata, Uptime Kuma).
 
 **N**ever-**E**nding **D**aemon. Or just ned. He's cool with either.
 

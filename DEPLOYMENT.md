@@ -243,10 +243,6 @@ RestartSec=5
 WantedBy=multi-user.target
 ```
 
-## Docker (Optional)
-
-Coming soon. For now, use the native installation above.
-
 ## Installing the Agent
 
 On each server you want to monitor:
