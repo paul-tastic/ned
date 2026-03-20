@@ -6,7 +6,7 @@ This guide covers how to self-host Ned on your own infrastructure.
 
 ### Server (API + Dashboard)
 
-- **PHP 8.2+** with extensions: `curl`, `mbstring`, `openssl`, `pdo_sqlite` (or `pdo_mysql`/`pdo_pgsql`)
+- **PHP 8.4+** with extensions: `curl`, `mbstring`, `openssl`, `pdo_sqlite` (or `pdo_mysql`/`pdo_pgsql`)
 - **Composer 2.x**
 - **Node.js 18+** and npm (for building assets)
 - **SQLite** (default) or MySQL 8+ / PostgreSQL 14+
@@ -19,7 +19,87 @@ This guide covers how to self-host Ned on your own infrastructure.
 - **Standard Linux utilities**: `free`, `df`, `uptime`, `nproc`
 - Optional: `systemctl` (for service monitoring), `fail2ban-client` (for security metrics)
 
-## Quick Start
+## Docker Deployment (Recommended)
+
+The simplest way to deploy Ned in production:
+
+```bash
+git clone https://github.com/paul-tastic/ned.git
+cd ned/server
+
+# Build the image (~140MB)
+docker build -t ned .
+
+# Run with persistent storage
+docker run -d --name ned \
+  -p 80:80 \
+  -v ned_data:/var/www/html/database \
+  -v ned_storage:/var/www/html/storage \
+  ned
+
+# Initial setup
+docker exec ned php artisan key:generate --force
+docker exec ned php artisan migrate --force
+docker exec -it ned php artisan ned:install
+```
+
+The container runs nginx, PHP-FPM, queue worker, and scheduler via supervisord.
+
+### Docker Compose with Caddy (auto-TLS)
+
+```yaml
+version: "3.8"
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on:
+      - ned
+  ned:
+    build: .
+    restart: unless-stopped
+    volumes:
+      - ned_data:/var/www/html/database
+      - ned_storage:/var/www/html/storage
+volumes:
+  caddy_data:
+  ned_data:
+  ned_storage:
+```
+
+```
+# Caddyfile
+ned.yourdomain.com {
+    reverse_proxy ned:80
+}
+```
+
+### Upgrading (Docker)
+
+```bash
+cd ned/server
+git pull origin master
+docker build -t ned .
+docker stop ned && docker rm ned
+docker run -d --name ned \
+  -p 80:80 \
+  -v ned_data:/var/www/html/database \
+  -v ned_storage:/var/www/html/storage \
+  ned
+docker exec ned php artisan migrate --force
+```
+
+Data persists in Docker volumes across rebuilds.
+
+## Manual Deployment
+
+### Quick Start
 
 ```bash
 # Clone the repository
@@ -74,7 +154,7 @@ server {
     error_page 404 /index.php;
 
     location ~ \.php$ {
-        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
+        fastcgi_pass unix:/var/run/php/php8.4-fpm.sock;
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         include fastcgi_params;
     }
@@ -328,7 +408,7 @@ mysql -u ned -p ned < /backup/ned-20240101.sql
 
 ### Dashboard not loading
 
-1. Check PHP-FPM is running: `systemctl status php8.2-fpm`
+1. Check PHP-FPM is running: `systemctl status php8.4-fpm`
 2. Check nginx errors: `tail -f /var/log/nginx/error.log`
 3. Check Laravel logs: `tail -f /var/www/ned/server/storage/logs/laravel.log`
 

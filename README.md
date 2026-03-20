@@ -94,7 +94,7 @@ See the [Issues tab](https://github.com/paul-tastic/ned/issues) for the full roa
 | Component | Technology | Why |
 |-----------|------------|-----|
 | Agent | Bash | Zero dependencies, runs anywhere |
-| API | Laravel 11 | Fast to build, familiar |
+| API | Laravel 12 | Fast to build, familiar |
 | Database | SQLite | Simple, no setup, good enough for 10s of servers |
 | Dashboard | Livewire + Flux | Reactive without JS complexity |
 | Hosting | Single VPS | Self-hosted, $5-10/mo |
@@ -114,16 +114,49 @@ If you're hosting ned on its own server (or want a clean URL), set up a subdomai
 
 You can also install ned on the same server you're monitoring - just use `localhost` or the server's IP.
 
-#### Installation Steps
+#### Option 1: Docker (Recommended)
+
+```bash
+git clone https://github.com/paul-tastic/ned.git
+cd ned/server
+
+# Build the image
+docker build -t ned .
+
+# Run with persistent storage
+docker run -d --name ned \
+  -p 80:80 \
+  -v ned_data:/var/www/html/database \
+  -v ned_storage:/var/www/html/storage \
+  ned
+
+# Generate app key and run migrations
+docker exec ned php artisan key:generate --force
+docker exec ned php artisan migrate --force
+
+# Create admin user
+docker exec -it ned php artisan ned:install
+```
+
+For production with auto-TLS, use a reverse proxy like [Caddy](https://caddyserver.com):
+
+```
+# Caddyfile
+ned.yourdomain.com {
+    reverse_proxy localhost:80
+}
+```
+
+#### Option 2: Manual Installation
 
 ```bash
 # Clone the repo
 git clone https://github.com/paul-tastic/ned.git
-cd ned
+cd ned/server
 
 # Install dependencies
-composer install
-npm install && npm run build
+composer install --no-dev --optimize-autoloader
+npm ci && npm run build
 
 # Configure
 cp .env.example .env
