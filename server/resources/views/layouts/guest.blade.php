@@ -16,7 +16,7 @@
         <link href="https://fonts.bunny.net/css?family=jetbrains-mono:400,500,600,700&family=inter:400,500,600&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <script src="https://cdn.tailwindcss.com"></script>
 
         <style>
             .font-mono { font-family: 'JetBrains Mono', monospace; }

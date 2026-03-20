@@ -8,7 +8,7 @@
         <link rel="icon" href="/favicon.ico" sizes="32x32">
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=jetbrains-mono:400,500,600,700&family=inter:400,500,600,700&display=swap" rel="stylesheet" />
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <script src="https://cdn.tailwindcss.com"></script>
         <style>
             .font-mono { font-family: 'JetBrains Mono', monospace; }
             .font-sans { font-family: 'Inter', sans-serif; }
