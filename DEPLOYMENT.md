@@ -30,9 +30,13 @@ cd ned/server
 # Build the image (~140MB)
 docker build -t ned .
 
-# Run with persistent storage
+# Create .env from example (key:generate writes the APP_KEY here)
+cp .env.example .env
+
+# Run with persistent storage and .env mounted
 docker run -d --name ned \
   -p 80:80 \
+  -v $(pwd)/.env:/var/www/html/.env \
   -v ned_data:/var/www/html/database \
   -v ned_storage:/var/www/html/storage \
   ned
@@ -45,7 +49,13 @@ docker exec -it ned php artisan ned:install
 
 The container runs nginx, PHP-FPM, queue worker, and scheduler via supervisord.
 
+**Important:** The `.env` file must be mounted into the container. `key:generate` writes
+the `APP_KEY` value to this file, and Laravel reads it at runtime. Without it, you'll get
+a 500 error.
+
 ### Docker Compose with Caddy (auto-TLS)
+
+Create a `.env` file first: `cp .env.example .env`
 
 ```yaml
 version: "3.8"
@@ -64,7 +74,9 @@ services:
   ned:
     build: .
     restart: unless-stopped
+    env_file: .env
     volumes:
+      - ./.env:/var/www/html/.env
       - ned_data:/var/www/html/database
       - ned_storage:/var/www/html/storage
 volumes:
@@ -89,6 +101,7 @@ docker build -t ned .
 docker stop ned && docker rm ned
 docker run -d --name ned \
   -p 80:80 \
+  -v $(pwd)/.env:/var/www/html/.env \
   -v ned_data:/var/www/html/database \
   -v ned_storage:/var/www/html/storage \
   ned

@@ -123,9 +123,13 @@ cd ned/server
 # Build the image
 docker build -t ned .
 
-# Run with persistent storage
+# Create .env from example
+cp .env.example .env
+
+# Run with persistent storage and .env
 docker run -d --name ned \
   -p 80:80 \
+  -v $(pwd)/.env:/var/www/html/.env \
   -v ned_data:/var/www/html/database \
   -v ned_storage:/var/www/html/storage \
   ned
@@ -166,7 +170,7 @@ php artisan key:generate
 php artisan migrate
 
 # Create admin user
-php artisan ned:create-user
+php artisan ned:install
 
 # Serve (or configure nginx/apache)
 php artisan serve
