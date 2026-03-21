@@ -37,7 +37,7 @@ Thanks for your interest in contributing to Ned! This document outlines the proc
 
 ### Prerequisites
 
-- PHP 8.2+
+- PHP 8.4+
 - Composer
 - Node.js 18+ and npm
 - SQLite (or MySQL/PostgreSQL for production-like testing)

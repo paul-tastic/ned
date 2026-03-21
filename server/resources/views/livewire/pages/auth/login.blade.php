@@ -31,41 +31,55 @@ new #[Layout('layouts.guest')] class extends Component
     <form wire:submit="login">
         <!-- Email Address -->
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input wire:model="form.email" id="email" class="block mt-1 w-full" type="email" name="email" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('form.email')" class="mt-2" />
+            <label for="email" class="block text-sm font-medium text-emerald-400 font-mono mb-1">email</label>
+            <input wire:model="form.email" id="email"
+                class="block w-full bg-gray-800 border border-gray-700 text-gray-200 rounded px-3 py-2 font-mono text-sm
+                       focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none
+                       placeholder-gray-600"
+                type="email" name="email" required autofocus autocomplete="username"
+                placeholder="ned@yourdomain.com" />
+            <x-input-error :messages="$errors->get('form.email')" class="mt-1" />
         </div>
 
         <!-- Password -->
         <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input wire:model="form.password" id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
+            <label for="password" class="block text-sm font-medium text-emerald-400 font-mono mb-1">password</label>
+            <input wire:model="form.password" id="password"
+                class="block w-full bg-gray-800 border border-gray-700 text-gray-200 rounded px-3 py-2 font-mono text-sm
+                       focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none
+                       placeholder-gray-600"
+                type="password" name="password" required autocomplete="current-password"
+                placeholder="********" />
             <x-input-error :messages="$errors->get('form.password')" class="mt-2" />
         </div>
 
         <!-- Remember Me -->
         <div class="block mt-4">
-            <label for="remember" class="inline-flex items-center">
-                <input wire:model="form.remember" id="remember" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
+            <label for="remember" class="inline-flex items-center cursor-pointer">
+                <input wire:model="form.remember" id="remember" type="checkbox"
+                    class="rounded bg-gray-800 border-gray-700 text-emerald-500 shadow-sm focus:ring-emerald-500 focus:ring-offset-0 focus:ring-offset-gray-900"
+                    name="remember">
+                <span class="ms-2 text-sm text-gray-400 font-mono">--remember-me</span>
             </label>
         </div>
 
-        <div class="flex items-center justify-end mt-4">
+        <div class="flex items-center justify-between mt-6">
             @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}" wire:navigate>
-                    {{ __('Forgot your password?') }}
+                <a class="text-xs text-gray-500 hover:text-emerald-400 font-mono transition-colors" href="{{ route('password.request') }}" wire:navigate>
+                    forgot credentials?
                 </a>
             @endif
 
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
+            <button type="submit"
+                class="inline-flex items-center px-5 py-2 bg-emerald-600 hover:bg-emerald-500 border border-emerald-500
+                       rounded font-mono text-sm text-white font-semibold tracking-wide
+                       focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-gray-900
+                       transition ease-in-out duration-150">
+                <svg class="w-4 h-4 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                </svg>
+                ssh in
+            </button>
         </div>
     </form>
 </div>
