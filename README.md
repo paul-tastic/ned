@@ -296,6 +296,72 @@ For media servers running Plex/*arr stack, ned auto-detects all services:
 - `GET /install.sh` - Agent install script
 - `GET /agent.sh` - Agent script download
 
+### Registration (Shared Secret)
+
+These endpoints use the `X-Registration-Secret` header for authentication (set via `NED_REGISTRATION_SECRET` env var). Designed for automated infrastructure — ASG scale-up/down, Terraform provisioners, etc.
+
+- `POST /api/servers/register` - Register (or re-register) a server and receive an agent token
+- `POST /api/servers/deregister` - Deregister a server (deactivates it, agent gets 403)
+
+#### Register
+
+```bash
+curl -X POST https://ned.yourdomain.com/api/servers/register \
+  -H "Content-Type: application/json" \
+  -H "X-Registration-Secret: YOUR_SECRET" \
+  -d '{"name": "worker-i-0abc123", "group": "worker"}'
+```
+
+Response (201 new, 200 existing with rotated token):
+```json
+{
+  "server_id": 5,
+  "name": "worker-i-0abc123",
+  "token": "xxxxxxxx...64 chars...xxxxxxxx",
+  "rotated": false
+}
+```
+
+If a server with the same name already exists, the token is rotated and `is_active` is set back to `true`. This handles ASG instance replacement gracefully — same name, fresh token.
+
+#### Deregister
+
+```bash
+curl -X POST https://ned.yourdomain.com/api/servers/deregister \
+  -H "Content-Type: application/json" \
+  -H "X-Registration-Secret: YOUR_SECRET" \
+  -d '{"name": "worker-i-0abc123"}'
+```
+
+Response (200):
+```json
+{
+  "server_id": 5,
+  "name": "worker-i-0abc123",
+  "deregistered": true
+}
+```
+
+The server is soft-deleted: `is_active` is set to `false` and status becomes `offline`. The agent will receive 403 on its next metrics push. The server record and its metrics history are preserved in the database. Re-registering with the same name reactivates it.
+
+#### ASG Integration Example
+
+Call register in your EC2 user-data (scale-up) and deregister in a systemd shutdown hook (scale-down):
+
+```bash
+# In user-data (on boot):
+NEDDY_TOKEN=$(curl -sS -X POST "http://$NEDDY_IP/api/servers/register" \
+  -H "Content-Type: application/json" \
+  -H "X-Registration-Secret: $NEDDY_SECRET" \
+  -d "{\"name\": \"worker-$INSTANCE_ID\"}" | jq -r '.token')
+
+# In shutdown hook (on termination):
+curl -sS -X POST "http://$NEDDY_IP/api/servers/deregister" \
+  -H "Content-Type: application/json" \
+  -H "X-Registration-Secret: $NEDDY_SECRET" \
+  -d "{\"name\": \"worker-$INSTANCE_ID\"}"
+```
+
 ### Authenticated (Server Token)
 - `POST /api/metrics` - Submit metrics payload
 
