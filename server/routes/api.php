@@ -1,8 +1,16 @@
 <?php
 
 use App\Http\Controllers\Api\MetricsController;
+use App\Http\Controllers\Api\RegistrationController;
 use App\Http\Middleware\AuthenticateServer;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
+
+// Rate limit: 5 registration attempts per minute per IP
+RateLimiter::for('registration', function ($request) {
+    return Limit::perMinute(5)->by($request->ip());
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -37,6 +45,10 @@ Route::get('/version', function () {
         'app' => 'ned-server',
     ]);
 });
+
+// Server auto-registration - shared secret + rate limited
+Route::post('/servers/register', [RegistrationController::class, 'register'])
+    ->middleware('throttle:registration');
 
 // Agent endpoints - require server token
 Route::middleware(AuthenticateServer::class)->group(function () {
