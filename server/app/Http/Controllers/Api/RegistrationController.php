@@ -26,7 +26,7 @@ class RegistrationController extends Controller
     {
         $secret = config('ned.registration_secret');
 
-        if (! $secret || $request->header('X-Registration-Secret') !== $secret) {
+        if (! $secret || ! hash_equals($secret, (string) $request->header('X-Registration-Secret'))) {
             return response()->json(['error' => 'Invalid registration secret'], 401);
         }
 
@@ -98,7 +98,7 @@ class RegistrationController extends Controller
     {
         $secret = config('ned.registration_secret');
 
-        if (! $secret || $request->header('X-Registration-Secret') !== $secret) {
+        if (! $secret || ! hash_equals($secret, (string) $request->header('X-Registration-Secret'))) {
             return response()->json(['error' => 'Invalid registration secret'], 401);
         }
 

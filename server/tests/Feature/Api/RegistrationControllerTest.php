@@ -142,6 +142,29 @@ class RegistrationControllerTest extends TestCase
         $response->assertStatus(422);
     }
 
+    public function test_deregister_is_idempotent(): void
+    {
+        $token = Server::generateToken();
+        $server = Server::create([
+            'user_id' => $this->user->id,
+            'name' => 'worker-i-abc123',
+            'token' => $token['hashed'],
+            'status' => 'offline',
+            'is_active' => false,
+        ]);
+
+        // Deregistering an already-deregistered server should succeed (ASG retry safety)
+        $response = $this->postJson('/api/servers/deregister', [
+            'name' => 'worker-i-abc123',
+        ], [
+            'X-Registration-Secret' => $this->secret,
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['deregistered' => true]);
+        $this->assertFalse($server->fresh()->is_active);
+    }
+
     public function test_deregistered_server_can_reregister(): void
     {
         $token = Server::generateToken();
