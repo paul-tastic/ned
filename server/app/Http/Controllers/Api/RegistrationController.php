@@ -26,7 +26,7 @@ class RegistrationController extends Controller
     {
         $secret = config('ned.registration_secret');
 
-        if (! $secret || $request->header('X-Registration-Secret') !== $secret) {
+        if (! $secret || ! hash_equals($secret, (string) $request->header('X-Registration-Secret'))) {
             return response()->json(['error' => 'Invalid registration secret'], 401);
         }
 
@@ -82,5 +82,45 @@ class RegistrationController extends Controller
             'token' => $token['plain'],
             'rotated' => false,
         ], 201);
+    }
+
+    /**
+     * Deregister a server (soft-delete: deactivate + set offline).
+     * POST /api/servers/deregister
+     *
+     * Headers:
+     *   X-Registration-Secret: <shared secret from NED_REGISTRATION_SECRET env>
+     *
+     * Body:
+     *   name: string (required) — e.g. "worker-i-0abc123"
+     */
+    public function deregister(Request $request): JsonResponse
+    {
+        $secret = config('ned.registration_secret');
+
+        if (! $secret || ! hash_equals($secret, (string) $request->header('X-Registration-Secret'))) {
+            return response()->json(['error' => 'Invalid registration secret'], 401);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $server = Server::where('name', $validated['name'])->first();
+
+        if (! $server) {
+            return response()->json(['error' => 'Server not found'], 404);
+        }
+
+        $server->update([
+            'is_active' => false,
+            'status' => 'offline',
+        ]);
+
+        return response()->json([
+            'server_id' => $server->id,
+            'name' => $server->name,
+            'deregistered' => true,
+        ]);
     }
 }
