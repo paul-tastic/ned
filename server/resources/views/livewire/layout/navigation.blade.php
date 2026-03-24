@@ -24,8 +24,15 @@ new class extends Component
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}" wire:navigate class="flex items-center gap-2">
-                        <x-ned-logo class="h-9 w-9" />
-                        <span class="text-lg font-semibold text-white">ned</span>
+                        @if(config('ned.brand_logo'))
+                            <img src="{{ asset(config('ned.brand_logo')) }}" alt="{{ config('ned.brand_name', 'ned') }}" class="h-9 w-9 object-contain" />
+                        @else
+                            <x-ned-logo class="h-9 w-9" />
+                        @endif
+                        <span class="text-lg font-semibold text-white">{{ config('ned.brand_name', 'ned') }}</span>
+                        @if(config('ned.brand_name'))
+                            <span class="text-xs text-zinc-500 self-end mb-0.5">powered by ned</span>
+                        @endif
                     </a>
                 </div>
 
