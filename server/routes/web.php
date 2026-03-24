@@ -7,6 +7,7 @@ Route::view('/', 'welcome');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
+    Route::view('settings', 'settings')->name('settings');
     Route::view('servers/create', 'servers.create')->name('servers.create');
     Route::get('servers/{server}', fn (Server $server) => view('servers.show', ['server' => $server]))->name('servers.show');
 });
