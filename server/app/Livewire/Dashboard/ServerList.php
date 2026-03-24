@@ -17,6 +17,11 @@ class ServerList extends Component
             ->map(function ($server) {
                 $server->latest_metric = $server->latestMetric();
 
+                // Override stored status if server hasn't reported in
+                if ($server->isOffline()) {
+                    $server->status = 'offline';
+                }
+
                 return $server;
             });
 
