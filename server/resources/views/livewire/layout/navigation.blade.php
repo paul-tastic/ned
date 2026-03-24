@@ -24,8 +24,15 @@ new class extends Component
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}" wire:navigate class="flex items-center gap-2">
-                        <x-ned-logo class="h-9 w-9" />
-                        <span class="text-lg font-semibold text-white">ned</span>
+                        @if(config('ned.brand_logo'))
+                            <img src="{{ asset(config('ned.brand_logo')) }}" alt="{{ config('ned.brand_name', 'ned') }}" class="h-9 w-9 object-contain" />
+                        @else
+                            <x-ned-logo class="h-9 w-9" />
+                        @endif
+                        <span class="text-lg font-semibold text-white">{{ config('ned.brand_name', 'ned') }}</span>
+                        @if(config('ned.brand_name'))
+                            <span class="text-xs text-zinc-500 self-end mb-0.5">powered by ned</span>
+                        @endif
                     </a>
                 </div>
 
@@ -33,6 +40,9 @@ new class extends Component
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('settings')" :active="request()->routeIs('settings')" wire:navigate>
+                        {{ __('Settings') }}
                     </x-nav-link>
                 </div>
             </div>
@@ -84,6 +94,9 @@ new class extends Component
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                 {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('settings')" :active="request()->routeIs('settings')" wire:navigate>
+                {{ __('Settings') }}
             </x-responsive-nav-link>
         </div>
 

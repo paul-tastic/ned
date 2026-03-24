@@ -30,4 +30,20 @@ return [
 
     'max_servers' => env('NED_MAX_SERVERS', 50),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Custom Branding
+    |--------------------------------------------------------------------------
+    |
+    | Override the default Ned branding with your own name and logo.
+    | Set NED_BRAND_NAME to display your organization name in the nav.
+    | Set NED_BRAND_LOGO to a path (relative to public/) for a custom logo
+    | image. When set, the custom logo replaces the default Ned "n" icon
+    | and "powered by ned" appears as a subtle secondary badge.
+    |
+    */
+
+    'brand_name' => env('NED_BRAND_NAME'),
+    'brand_logo' => env('NED_BRAND_LOGO'),
+
 ];
