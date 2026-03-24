@@ -61,7 +61,7 @@ class ServerListTest extends TestCase
         $this->createServer(['status' => 'online']);
         $this->createServer(['status' => 'warning']);
         $this->createServer(['status' => 'critical']);
-        $this->createServer(['status' => 'offline']);
+        $this->createServer(['status' => 'offline', 'last_seen_at' => now()->subMinutes(10)]);
 
         $component = Livewire::test(ServerList::class);
 
@@ -82,7 +82,7 @@ class ServerListTest extends TestCase
         $online = $this->createServer(['name' => 'Online Server', 'status' => 'online']);
         $critical = $this->createServer(['name' => 'Critical Server', 'status' => 'critical']);
         $warning = $this->createServer(['name' => 'Warning Server', 'status' => 'warning']);
-        $offline = $this->createServer(['name' => 'Offline Server', 'status' => 'offline']);
+        $offline = $this->createServer(['name' => 'Offline Server', 'status' => 'offline', 'last_seen_at' => now()->subMinutes(10)]);
 
         $component = Livewire::test(ServerList::class);
 
@@ -144,6 +144,7 @@ class ServerListTest extends TestCase
             'token' => $token['hashed'],
             'status' => 'online',
             'is_active' => true,
+            'last_seen_at' => now(),
         ], $attributes));
     }
 }

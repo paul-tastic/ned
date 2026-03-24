@@ -33,6 +33,11 @@ class ShowServer extends Component
 
     public function render()
     {
+        // Override stored status if server hasn't reported in
+        if ($this->server->isOffline()) {
+            $this->server->status = 'offline';
+        }
+
         $metrics = $this->server->metrics()
             ->latest('recorded_at')
             ->limit(288) // 24 hours at 5-min intervals
