@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\MetricsController;
+use App\Http\Controllers\Api\MobileController;
 use App\Http\Controllers\Api\RegistrationController;
 use App\Http\Middleware\AuthenticateServer;
 use Illuminate\Support\Facades\Route;
@@ -10,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 | API Routes
 |--------------------------------------------------------------------------
 |
-| Agent endpoints (server token auth)
+| Agent endpoints (server token auth) + Mobile app endpoints (Sanctum)
 |
 */
 
@@ -50,4 +52,22 @@ Route::post('/servers/deregister', [RegistrationController::class, 'deregister']
 // Agent endpoints - require server token
 Route::middleware(AuthenticateServer::class)->group(function () {
     Route::post('/metrics', [MetricsController::class, 'store']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Mobile App Endpoints (Sanctum token auth)
+|--------------------------------------------------------------------------
+*/
+
+// Login - rate limited to 5 attempts per minute
+Route::post('/auth/login', [AuthController::class, 'login'])
+    ->middleware('throttle:5,1');
+
+// Protected mobile endpoints
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/auth/pair', [AuthController::class, 'pair']);
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::get('/dashboard', [MobileController::class, 'dashboard']);
+    Route::get('/servers/{server}', [MobileController::class, 'show']);
 });
