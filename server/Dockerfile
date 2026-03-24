@@ -8,7 +8,11 @@ RUN apk add --no-cache \
     sqlite-dev \
     curl \
     npm \
-    && docker-php-ext-install pdo_sqlite pdo_mysql pcntl
+    libpng-dev \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo_sqlite pdo_mysql pcntl gd
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
