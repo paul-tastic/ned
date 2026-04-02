@@ -107,13 +107,25 @@ else
     echo -e "${YELLOW}Agent test produced warnings (this may be normal)${NC}"
 fi
 
-# Send first metrics
+# Send first metrics (retry up to 3 times with backoff — token may not
+# be fully committed to the server DB immediately after registration)
 echo "Sending first metrics..."
-if $SUDO "$INSTALL_DIR/ned-agent"; then
-    echo -e "${GREEN}First metrics sent successfully!${NC}"
-else
-    echo -e "${RED}Failed to send metrics. Check your token and API URL.${NC}"
-    exit 1
+METRICS_OK=false
+for ATTEMPT in 1 2 3; do
+    if $SUDO "$INSTALL_DIR/ned-agent" 2>/dev/null; then
+        echo -e "${GREEN}First metrics sent successfully!${NC}"
+        METRICS_OK=true
+        break
+    fi
+    if [ "$ATTEMPT" -lt 3 ]; then
+        echo -e "${YELLOW}Attempt $ATTEMPT failed, retrying in ${ATTEMPT}s...${NC}"
+        sleep "$ATTEMPT"
+    fi
+done
+
+if [ "$METRICS_OK" = false ]; then
+    echo -e "${YELLOW}Initial metrics send failed — the cron job will retry in $CRON_INTERVAL minutes.${NC}"
+    echo -e "${YELLOW}If metrics never appear, check your token and API URL.${NC}"
 fi
 
 echo ""
